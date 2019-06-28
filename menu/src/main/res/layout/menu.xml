@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" android:layout_height="match_parent"
+    android:layout_width="200dp">
+    <group
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/favorite"
+            android:icon="@mipmap/email"
+            android:checkable="true"
+            android:title="    个人中心"/>
+
+    </group>
+    <item
+        android:id="@+id/wallet"
+        android:icon="@mipmap/email"
+
+        android:title="    所有记事本"/>
+    <item
+        android:id="@+id/photo"
+        android:icon="@mipmap/email"
+        android:title="    在线协作编辑"/>
+    <item
+        android:id="@+id/dress"
+        android:icon="@mipmap/email"
+        android:title="    编辑历史"/>
+    <item
+        android:id="@+id/file"
+        android:icon="@mipmap/email"
+        android:title="    设置"/>
+
+</menu>

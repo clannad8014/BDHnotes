@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#CDCDCD"
+    tools:context=".MainActivity">
+
+    <EditText
+        android:id="@+id/edit_uname"
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+
+        android:layout_marginTop="40dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:background="#fff"
+        android:layout_gravity="center"
+        android:hint="请输入用户名..."
+        />
+
+    <EditText
+        android:id="@+id/edit_upwd"
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+
+        android:layout_marginTop="20dp"
+
+        android:hint="密码"
+        android:background="#fff"
+        android:layout_gravity="center"
+        android:ems="10"
+        android:inputType="textPassword" />
+
+    <CheckBox
+        android:id="@+id/checkBox"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:text="记住密码"
+        android:layout_marginLeft="50dp"
+        />
+
+    <Button
+        android:id="@+id/login"
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center"
+
+        android:background="#009B0A"
+        android:text="登录"
+        android:textColor="#fff"
+        android:textSize="20dp" />
+
+    <Button
+        android:id="@+id/regist"
+        android:layout_width="300dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:background="#009B0A"
+        android:text="注册"
+        android:textColor="#fff"
+        android:textSize="20dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="right"
+        android:layout_marginRight="25dp"
+        android:text="没有QQ，如何登录？"
+        android:textColor="#5A79A3"/>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="right"
+        android:layout_marginRight="25dp"
+        android:text="忘记密码？"
+        android:textColor="#6588b2"
+        />
+
+</LinearLayout>
