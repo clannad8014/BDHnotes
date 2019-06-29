@@ -6,9 +6,12 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -20,7 +23,11 @@ import java.util.ArrayList;
 
 public class login extends AppCompatActivity {
     NoteAdapter noteAdapter;
-    ListView listView;
+    ListView listView;//用户笔记列表
+    String uid;//用户名
+    ImageView addBtn;          //新建笔记的按钮
+
+
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
         @Override
@@ -55,12 +62,15 @@ public class login extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE };
  //****************
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        addBtn=findViewById(R.id.iv_add_flag);
         Bundle bundle = getIntent().getExtras();
-        String uid = bundle.getString("uid");
+        uid = bundle.getString("uid");
 
 //**********************读写 目前还未用
         int permission_WRITE = ActivityCompat.checkSelfPermission(login.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -70,7 +80,9 @@ public class login extends AppCompatActivity {
         }
 ////////////
         //加载笔记列表
-        init();
+        loadUserNoteList();
+        //增加笔记
+        addNote();
 
 
 
@@ -89,11 +101,11 @@ public class login extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        //init();
+        loadUserNoteList();
     }
 
     //加载listview
-    void init(){
+    void loadUserNoteList(){
 
         sqls sqls=new sqls();
         new Thread(new Runnable() {
@@ -101,7 +113,7 @@ public class login extends AppCompatActivity {
             public void run() {
                 Message message = handler.obtainMessage();
                 try {
-                    ArrayList<user_note_list> user_note_lists=sqls.sel_user_note_list("sa");
+                    ArrayList<user_note_list> user_note_lists=sqls.sel_user_note_list(uid);
                     if (user_note_lists !=null) {
                         ArrayList<show_list> show_lists=new ArrayList<>();
                         show_list sl=null;
@@ -110,7 +122,7 @@ public class login extends AppCompatActivity {
                             sl.setBid(unl.getBid());
                             sl.setTitle(unl.getTitle());
                             //取第一行作为显示内容
-                            String con=sqls.sel_hnum_content(unl.getBid(), "1").getXcontent();
+                            String con=sqls.sel_hnum_content(unl.getBid(), "null").getXcontent();
                             if(con!=null)
                             {sl.setA_content(con);}
                             else
@@ -137,6 +149,26 @@ public class login extends AppCompatActivity {
         }).start();
 
     }
+    //增加一个笔记
+    void addNote(){
+        addBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(login.this,AddActivity.class);
+                user_note_list unl=new user_note_list(uid);
+                Bundle bundle = new Bundle();
+                bundle.putString("uid",unl.getUid());
+                bundle.putString("bid",unl.getBid());
+                bundle.putString("title",unl.getTitle());
+                bundle.putString("ctime",unl.getCtime());
+                intent.putExtras(bundle);
+                startActivity(intent);
+            }
+        });
+    }
+
+
+
 }
 
 

@@ -13,7 +13,17 @@
         <item name="windowNoTitle">true</item>
 
     </style>
+    <style name="ToolbarPopupTheme" parent="Widget.AppCompat.Light.PopupMenu.Overflow">
+        <item name="android:colorBackground">#fff</item> <!--设置背景颜色-->
+        <item name="overlapAnchor">false</item> <!--设置不覆盖锚点-->
+        <item name="android:textColorSecondary">#fff</item> <!--menu图标颜色-->
+        <item name="android:textColorPrimary">#000</item>   <!--menu字体颜色-->
 
+    </style>
+    <style name="Toolbar.TitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">14sp</item>
+
+    </style>
 
 
 
