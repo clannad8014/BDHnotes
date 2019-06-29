@@ -19,7 +19,7 @@ public class DB_user {
 
     public static ArrayList<user> SearchId(String uid) throws SQLException{
 
-        Connection conn = getConn("haolayo_club");
+        Connection conn = getConn();
         String sql="" +
                 "select pwd from user where uid = ?";
         PreparedStatement psmt = conn.prepareStatement(sql);
@@ -81,7 +81,7 @@ public class DB_user {
     public static ArrayList<test> login() throws SQLException {
 
         //Connection conn = DBUtil.getConnection();
-        Connection conn = getConn("haolayo_club");
+        Connection conn = getConn();
         Statement stmt = conn.createStatement();
         ResultSet rs =  stmt.executeQuery("select * from user");
         ArrayList<test> test = new ArrayList<test>();

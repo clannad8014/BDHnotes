@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
                             String pwd=loginPwd.getText().toString();
                             ArrayList<user> list= DB_user.SearchId(name);
                             if(list!= null){
+
                                 String s = "查询成功";
                                 String str="";
                                 for(user U : list){
@@ -103,6 +104,11 @@ public class MainActivity extends AppCompatActivity {
                                //uname.equals(s1.trim())
                                 if(str.trim().equals(pwd.trim())){
                                     Intent intent = new Intent(MainActivity.this,login.class);
+                                    Bundle bundle = new Bundle();
+
+                                    bundle.putString("uid","sa");
+
+                                    intent.putExtras(bundle);
                                     startActivity(intent);
                                     message.what = 0x11;
                                     message.obj = "登录成功";
