@@ -1,4 +1,4 @@
-package com.clannad.menu.DB;
+package com.clannad.menu.models;
 
 public class user {
     private String uid;

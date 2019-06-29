@@ -1,5 +1,7 @@
 package com.clannad.menu.DB;
 
+import com.clannad.menu.models.user;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

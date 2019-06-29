@@ -1,7 +1,6 @@
 package com.clannad.menu;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
@@ -14,11 +13,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.clannad.menu.DB.DB_user;
-import com.clannad.menu.DB.user;
+import com.clannad.menu.models.user;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
