@@ -7,7 +7,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import com.clannad.menu.models.*;
 import static com.clannad.menu.DB.DBUtils.getConn;
-public class sqls {
+public class Sqls {
 
     //查询某用户的所有笔记
     public  ArrayList<user_note_list> sel_user_note_list(String uid) throws SQLException {
@@ -81,6 +81,20 @@ public class sqls {
         String sql="delete from user_note_list where bid = ?";
         PreparedStatement psmt = conn.prepareStatement(sql);
         psmt.setString(1,bid);
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+    //更改笔记标题
+    public void updateNote(user_note_list unl)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+        String sql="update user_note_list set title = ? where bid = ? ";
+        //预编译sql语句
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        //先对应SQL语句，给SQL语句传递参数
+        psmt.setString(1,unl.getTitle());
+        psmt.setString(2,unl.getBid());
         //执行SQL语句
         psmt.execute();
         psmt.close();

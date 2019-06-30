@@ -1,6 +1,7 @@
 package com.clannad.menu;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -12,12 +13,16 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.Layout;
+import android.text.Selection;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -40,6 +45,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.clannad.menu.DB.Sqls;
+
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +55,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.clannad.menu.models.*;
 
 public class AddActivity extends AppCompatActivity {
     String bid ;
@@ -79,6 +88,25 @@ public class AddActivity extends AppCompatActivity {
     Dialog dialog;              //底部弹窗
     View hrView;                //最下方菜单栏的那个横线
     View bottomMenu;            //最下方菜单栏
+
+
+    @SuppressLint("HandlerLeak")
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+
+            switch (msg.what){
+                case 0x27:
+                    String s = (String) msg.obj;
+                    Toast.makeText(AddActivity.this, s, Toast.LENGTH_LONG).show();
+                    break;
+               // case 0x28:
+                 //    msg.obj;
+
+            }
+
+        }
+    };
 
 
 
@@ -280,8 +308,86 @@ public class AddActivity extends AppCompatActivity {
             }
         });
         //endregion
+
+
+        //标题栏  光标的焦点事件
+        title.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    // 获得焦点 开始编辑
+                    Toast.makeText(AddActivity.this, "开始编辑标题", Toast.LENGTH_LONG).show();
+
+                } else {
+                    // 失去焦点  执行保存
+                   // Toast.makeText(AddActivity.this, "保存编辑标题", Toast.LENGTH_LONG).show();
+                    Sqls sqls=new Sqls();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Message message = handler.obtainMessage();
+                            user_note_list unl=new user_note_list();
+                            unl.setTitle(title.getText().toString());
+                            unl.setBid(bid);
+                            try {
+                                sqls.updateNote(unl);
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                                message.what = 0x27;
+                                message.obj ="修改标题失败" ;
+                            }
+                            handler.sendMessage(message);
+                        }
+                    }).start();
+
+
+                }
+            }
+        });
+
+        //内容改变
+       content.addTextChangedListener(new TextWatcher() {
+           @Override
+           public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+               //text  输入框中改变前的字符串信息
+               //start 输入框中改变前的字符串的起始位置
+               //count 输入框中改变前后的字符串改变数量一般为0
+               //after 输入框中改变后的字符串与起始位置的偏移量
+
+
+           }
+
+           @Override
+           public void onTextChanged(CharSequence s, int start, int before, int count) {
+               //text  输入框中改变后的字符串信息
+               //start 输入框中改变后的字符串的起始位置
+               //before 输入框中改变前的字符串的位置 默认为0
+               //count 输入框中改变后的一共输入字符串的数量
+               System.out.println(start+"***"+before+"*****"+count);
+               int xxxx=getCurrentCursorLine(content);
+               System.out.println(xxxx+"+++++++++++++++++++");
+               System.out.println(content.getText());
+
+
+           }
+
+           @Override
+           public void afterTextChanged(Editable s) {
+               //edit  输入结束呈现在输入框中的信息
+
+           }
+       });
+
+
+
+
+
+
+
+
+
     }
-    //endregion
+
 
 
 
@@ -564,7 +670,16 @@ public class AddActivity extends AppCompatActivity {
 */
     //endregion
 
+    //获得光标所在行号
+    private int getCurrentCursorLine(EditText editText) {
+        int selectionStart = Selection.getSelectionStart(editText.getText());
+        Layout layout = editText.getLayout();
 
+        if (selectionStart != -1) {
+            return layout.getLineForOffset(selectionStart) + 1;
+        }
+        return -1;
+    }
 
 
 }

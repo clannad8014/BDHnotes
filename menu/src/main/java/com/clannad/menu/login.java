@@ -5,16 +5,12 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.Message;
-import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.view.menu.MenuBuilder;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
@@ -24,7 +20,6 @@ import android.widget.Toast;
 import com.clannad.menu.DB.*;
 import com.clannad.menu.models.*;
 
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -116,7 +111,7 @@ public class login extends AppCompatActivity {
     //加载listview
     void loadUserNoteList(){
 
-        sqls sqls=new sqls();
+        Sqls sqls=new Sqls();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -164,7 +159,7 @@ public class login extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 user_note_list unl=new user_note_list(uid);
-                sqls sqls=new sqls();
+                Sqls sqls=new Sqls();
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -225,7 +220,7 @@ public class login extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         //确定删除
-                            sqls sqls=new sqls();
+                            Sqls sqls=new Sqls();
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {

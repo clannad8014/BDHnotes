@@ -46,6 +46,6 @@ public class user_note_list {
         String d=dateFormat.format(date).toString();
         this.ctime=d;
         this.bid=uid+"-"+d;
-        this.title="";
+        this.title="新建笔记";
     }
 }
