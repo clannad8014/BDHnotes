@@ -257,12 +257,12 @@ public class AddActivity extends AppCompatActivity {
 
         //endregion
 
-        //region toolbar的返回键点击事件********************************************先不设置功能
-       /* toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        //region toolbar的返回键点击事件
+       toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //自动保存
-                if(flag.getId() == -1){
+               /* if(flag.getId() == -1){
                     //这是新建的
                     if(isChanged){
                         addFlag();
@@ -275,10 +275,10 @@ public class AddActivity extends AppCompatActivity {
                         editFlag();
                     }
 
-                }
+                }*/
                 finish();
             }
-        });*/
+        });
         //endregion
     }
     //endregion
@@ -540,11 +540,11 @@ public class AddActivity extends AppCompatActivity {
     //endregion
 
     //region 点击返回退出时也会自动保存
-    /*@Override
+   /* @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(event.getKeyCode() == KeyEvent.KEYCODE_BACK){
             //自动保存
-            if(flag.getId() == -1){
+           if(flag.getId() == -1){
                 //这是新建的
                 if(isChanged){
                     addFlag();

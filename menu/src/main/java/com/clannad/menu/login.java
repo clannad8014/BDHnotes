@@ -13,6 +13,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.view.menu.MenuBuilder;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 import com.clannad.menu.DB.*;
 import com.clannad.menu.models.*;
 
+import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -107,6 +109,9 @@ public class login extends AppCompatActivity {
         super.onResume();
         loadUserNoteList();
     }
+
+
+
 
     //加载listview
     void loadUserNoteList(){
