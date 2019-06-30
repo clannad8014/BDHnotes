@@ -2,15 +2,20 @@ package com.clannad.menu;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -22,10 +27,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class login extends AppCompatActivity {
+    int delPosition=-1;            //用来删除的一个变量，因为内部类要用
+
+
     NoteAdapter noteAdapter;
-    ListView listView;//用户笔记列表
+    ListView listView;
     String uid;//用户名
     ImageView addBtn;          //新建笔记的按钮
+    ArrayList<show_list> show_lists;//用户笔记列表
 
 
     @SuppressLint("HandlerLeak")
@@ -34,13 +43,12 @@ public class login extends AppCompatActivity {
         public void handleMessage(Message msg) {
 
             switch (msg.what){
-                case 0x20: case 0x21:
+                case 0x20: case 0x21:case 0x23:case 0x24:case 0x25:case 0x26:
                     String s = (String) msg.obj;
-                    //tv_data.setText(s);
                     Toast.makeText(login.this, s, Toast.LENGTH_LONG).show();
                     break;
                 case 0x22:
-                    ArrayList<show_list> show_lists= (ArrayList<show_list>) msg.obj;
+                    show_lists= (ArrayList<show_list>) msg.obj;
                     //测试
                    /* for (show_list sl:show_lists){
                         System.out.println(sl.getA_content()+"++++++++++++"+sl.getCtime());
@@ -48,6 +56,12 @@ public class login extends AppCompatActivity {
                     noteAdapter=new NoteAdapter(login.this,R.layout.flag,show_lists);
                     listView = findViewById(R.id.lv_flags);
                     listView.setAdapter(noteAdapter);
+                    //增加笔记
+                    addNote();
+                    //点击一个笔记进入
+                    clickOneNote();
+                    //长按删除一个笔记
+                    longClickNote();
 
 
             }
@@ -81,16 +95,6 @@ public class login extends AppCompatActivity {
 ////////////
         //加载笔记列表
         loadUserNoteList();
-        //增加笔记
-        addNote();
-
-
-
-
-
-
-
-
 
 
 
@@ -122,11 +126,11 @@ public class login extends AppCompatActivity {
                             sl.setBid(unl.getBid());
                             sl.setTitle(unl.getTitle());
                             //取第一行作为显示内容
-                            String con=sqls.sel_hnum_content(unl.getBid(), "null").getXcontent();
+                            String con=sqls.sel_hnum_content(unl.getBid(), "1").getXcontent();
                             if(con!=null)
                             {sl.setA_content(con);}
                             else
-                            {sl.setA_content("1");}
+                            {sl.setA_content("null");}
                             sl.setCtime(unl.getCtime());
                             show_lists.add(sl);
                         }
@@ -154,18 +158,101 @@ public class login extends AppCompatActivity {
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(login.this,AddActivity.class);
                 user_note_list unl=new user_note_list(uid);
+                sqls sqls=new sqls();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Message message = handler.obtainMessage();
+                        try {
+                            sqls.addOneNote(unl);
+                            message.what = 0x24;
+                            message.obj ="新建笔记成功" ;
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            message.what = 0x23;
+                            message.obj ="新建笔记失败" ;
+                        }
+
+                        handler.sendMessage(message);
+                    }
+                }).start();
+                Intent intent = new Intent(login.this,AddActivity.class);
                 Bundle bundle = new Bundle();
-                bundle.putString("uid",unl.getUid());
                 bundle.putString("bid",unl.getBid());
                 bundle.putString("title",unl.getTitle());
                 bundle.putString("ctime",unl.getCtime());
                 intent.putExtras(bundle);
                 startActivity(intent);
+
             }
         });
     }
+
+    public void clickOneNote(){
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                show_list sl= show_lists.get(i);
+                Intent intent = new Intent(login.this,AddActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("bid",sl.getBid());
+                bundle.putString("title",sl.getTitle());
+                bundle.putString("ctime",sl.getCtime());
+                intent.putExtras(bundle);
+                startActivity(intent);
+            }
+        });
+    }
+
+    public void longClickNote(){
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long l) {
+
+                delPosition = position;
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(login.this);
+                builder.setIcon(R.drawable.flag4_2);
+                builder.setTitle("接下来你要面临一个抉择");
+                builder.setMessage("是否要删除？");
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //确定删除
+                            sqls sqls=new sqls();
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Message message = handler.obtainMessage();
+                                    try {
+                                        sqls.deleteOneNote(show_lists.get(delPosition).getBid());
+                                        message.what = 0x26;
+                                        message.obj ="删除笔记成功" ;
+                                        loadUserNoteList();
+                                    } catch (SQLException e) {
+                                        e.printStackTrace();
+                                        message.what = 0x25;
+                                        message.obj ="删除笔记失败" ;
+                                    }
+
+                                    handler.sendMessage(message);
+                                }
+                            }).start();
+                    }
+                });
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //取消
+                    }
+                });
+                builder.show();
+                return true;
+            }
+        });
+    }
+
 
 
 

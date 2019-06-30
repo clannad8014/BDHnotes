@@ -49,7 +49,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AddActivity extends AppCompatActivity {
-    String uid ;
     String bid ;
     String ttt ;
     String ctime ;
@@ -89,7 +88,6 @@ public class AddActivity extends AppCompatActivity {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_add);
         Bundle bundle = getIntent().getExtras();
-        uid = bundle.getString("uid");
         bid = bundle.getString("bid");
         ttt = bundle.getString("title");
         ctime = bundle.getString("ctime");
@@ -186,7 +184,7 @@ public class AddActivity extends AppCompatActivity {
 
         //endregion
 
-        //region toolbar的菜单的点击事件——即保存按钮的点击事件
+        //region toolbar的菜单的点击事件——即保存按钮的点击事件**************************************先不设置功能
        /* toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -258,9 +256,9 @@ public class AddActivity extends AppCompatActivity {
         //状态的监听会在状态改变的时候设置
 
         //endregion
-        
-        //region toolbar的返回键点击事件
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+
+        //region toolbar的返回键点击事件********************************************先不设置功能
+       /* toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //自动保存
@@ -280,23 +278,7 @@ public class AddActivity extends AppCompatActivity {
                 }
                 finish();
             }
-        });
-        //endregion
-
-        //region 分享按钮点击事件
-        share.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(AddFlagActivity.this,ShareActivity.class);
-                intent.putExtra("title",title.getText().toString());
-                intent.putExtra("content",content.getText().toString());
-                startActivity(intent);
-
-                /*String fname = ScreenShootUtils.savePic(ScreenShootUtils.getBitmapByView(scrollView));
-                Toast.makeText(AddFlagActivity.this,fname,Toast.LENGTH_SHORT).show();
-                Log.d("YYPT_shotPIC", fname);*/
-            }
-        });
+        });*/
         //endregion
     }
     //endregion
@@ -446,7 +428,7 @@ public class AddActivity extends AppCompatActivity {
 
 
     //region 新建flag，并将id赋给这个flag
-    private void addFlag(){
+   /* private void addFlag(){
 
         //String s = Html.fromHtml(content.getText());
         //Log.d("YYPT_ADD",);
@@ -470,10 +452,11 @@ public class AddActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-    }
+    }*/
     //endregion
 
     //region 编辑flag
+    /*
     private void editFlag(){
         int id = flag.getId();
         try {
@@ -490,7 +473,7 @@ public class AddActivity extends AppCompatActivity {
         }catch (Exception e){
             e.printStackTrace();
         }
-    }
+    }*/
     //endregion
 
 
@@ -534,35 +517,8 @@ public class AddActivity extends AppCompatActivity {
     //endregion
 
 
-
-
-    //region 一个新的flag，保存一次后，给其设置id
-    private void setFlagId(){
-        SQLiteDatabase db = dbUtil.getWritableDatabase();
-        Cursor cursor = db.query("flag",null,null,null,null,null,null);
-        if(cursor == null){
-            Log.d("AddFlagActivity", "没有呀");
-            return;
-        }
-        List<Integer> idList = new ArrayList<>();
-        if(cursor.moveToFirst()){
-            do{
-                //遍历Cursor对象，取出数据并打印
-                int id = cursor.getInt(cursor.getColumnIndex("id"));
-                idList.add(id);
-            }while(cursor.moveToNext());
-        }
-        cursor.close();
-        Collections.sort(idList);
-        int theId = idList.get(idList.size()-1);
-        Log.d("YYPT_ID", ""+theId);
-        flag.setId(theId);
-    }
-    //endregion
-
-
     //region 生命周期结束后自动保存
-    @Override
+   /* @Override
     protected void onStop() {
         super.onStop();
         //自动保存
@@ -580,11 +536,11 @@ public class AddActivity extends AppCompatActivity {
             }
         }
         isChanged = false;
-    }
+    }*/
     //endregion
 
     //region 点击返回退出时也会自动保存
-    @Override
+    /*@Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(event.getKeyCode() == KeyEvent.KEYCODE_BACK){
             //自动保存
@@ -605,7 +561,7 @@ public class AddActivity extends AppCompatActivity {
         }
         return super.onKeyDown(keyCode, event);
     }
-
+*/
     //endregion
 
 

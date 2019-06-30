@@ -54,6 +54,38 @@ public class sqls {
         return content;
     }
 
+    //新建一个笔记
+    public void addOneNote(user_note_list unl)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+        String sql= "insert into user_note_list"+
+                "(uid,bid,title,ctime) "+
+                "values(?,?,?,?)";//参数用?表示，相当于占位符;
+
+        //预编译sql语句
+        PreparedStatement psmt = conn.prepareStatement(sql);
+
+        //先对应SQL语句，给SQL语句传递参数
+        psmt.setString(1,unl.getUid());
+        psmt.setString(2,unl.getBid());
+        psmt.setString(3,unl.getTitle());
+        psmt.setString(4,unl.getCtime());
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+
+    //删除某个笔记
+    public void deleteOneNote(String bid) throws SQLException{
+        Connection conn = getConn();
+        String sql="delete from user_note_list where bid = ?";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setString(1,bid);
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+
 
 
 

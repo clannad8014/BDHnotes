@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".AddActivity"
-    android:background="#cb4042">
+    android:background="#FCF9F9">
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar_edit"
         android:layout_width="match_parent"
