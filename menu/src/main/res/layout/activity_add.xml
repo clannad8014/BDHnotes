@@ -81,8 +81,6 @@
             android:src="@drawable/pic"
             android:layout_alignParentLeft="true"/>
 
-
-
     </RelativeLayout>
 
 </RelativeLayout>

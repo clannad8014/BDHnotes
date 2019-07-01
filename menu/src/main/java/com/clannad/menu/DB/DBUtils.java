@@ -15,7 +15,7 @@ public class DBUtils {
 
     private static String driver = "com.mysql.jdbc.Driver";// MySql驱动
     private static String dburl = "jdbc:mysql://188.131.255.217:3306/";// 数据库路径
-    private static String dbname = "bdh_notes";// 库名
+    private static String dbname = "bdh_notes?useUnicode=true&characterEncoding=UTF-8";// 库名
     private static String user = "bdh_notes";// 用户名
     private static String password = "123456";// 密码
 

@@ -48,6 +48,6 @@ public class user_note_list {
         String d=dateFormat.format(date);
         this.ctime=dateStr;
         this.bid=uid+"-"+d;
-        this.title="新建笔记";
+        this.title="New Note";
     }
 }

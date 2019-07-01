@@ -34,7 +34,7 @@ public class Sqls {
     }
 
     //查询某笔记最新内容
-    public note_content sel_hnum_content(String bid) throws SQLException{
+    public note_content sel_New_content(String bid) throws SQLException{
         Connection conn = getConn();
         note_content content=new note_content();
         String sql= "select * from note_content where bid=? order by xhnum asc";
@@ -75,6 +75,25 @@ public class Sqls {
         psmt.execute();
         psmt.close();
     }
+    //初始化笔记内容
+    public void startNoteContent(note_content nc)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+        String sql= "insert into note_content (bid,xhnum,xcontent,xtime,xid) values(?,1,?,?,?)";//参数用?表示，相当于占位符;
+
+        //预编译sql语句
+        PreparedStatement psmt = conn.prepareStatement(sql);
+
+        //先对应SQL语句，给SQL语句传递参数
+        psmt.setString(1,nc.getBid());
+        psmt.setString(2,nc.getXcontent());
+        psmt.setString(3,nc.getXtime());
+        psmt.setString(4,nc.getXid());
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+
 
     //删除某个笔记
     public void deleteOneNote(String bid) throws SQLException{
@@ -96,6 +115,30 @@ public class Sqls {
         //先对应SQL语句，给SQL语句传递参数
         psmt.setString(1,unl.getTitle());
         psmt.setString(2,unl.getBid());
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+
+
+
+
+
+    //增量式 存储当前文本内容
+    public void addOneNoteContent(note_content nc)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+        String sql= "insert into note_content set bid=?,xhnum=(SELECT a.xhnum+1 from(select xhnum from note_content where bid=? ORDER BY xhnum desc LIMIT 1)a),xcontent=?,xtime=?,xid=?";
+
+        //预编译sql语句
+        PreparedStatement psmt = conn.prepareStatement(sql);
+
+        //先对应SQL语句，给SQL语句传递参数
+        psmt.setString(1,nc.getBid());
+        psmt.setString(2,nc.getBid());
+        psmt.setString(3,nc.getXcontent());
+        psmt.setString(4,nc.getXtime());
+        psmt.setString(5,nc.getXid());
         //执行SQL语句
         psmt.execute();
         psmt.close();

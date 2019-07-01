@@ -13,9 +13,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.nfc.tech.NfcV;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.service.voice.VoiceInteractionService;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -61,6 +63,7 @@ public class AddActivity extends AppCompatActivity {
     String bid ;
     String ttt ;
     String ctime ;
+    String xid;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -96,7 +99,7 @@ public class AddActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
 
             switch (msg.what){
-                case 0x27:
+                case 0x27:case 0x28:case 0x29:case 0x30:
                     String s = (String) msg.obj;
                     Toast.makeText(AddActivity.this, s, Toast.LENGTH_LONG).show();
                     break;
@@ -119,6 +122,7 @@ public class AddActivity extends AppCompatActivity {
         bid = bundle.getString("bid");
         ttt = bundle.getString("title");
         ctime = bundle.getString("ctime");
+        xid = bundle.getString("xid");
         //初始化基本参数
         init();
 
@@ -141,18 +145,23 @@ public class AddActivity extends AppCompatActivity {
 
         //region 初始化内容对象并初始化值
         title.setText(ttt);
+        //初始化文本内容
+        loadcontent();
 
         initContent();
 
         //初始化toolBar
         initToolBar();
 
+
+
+
         //默认让内容获取焦点，但是并不弹出软键盘
-        content.setFocusable(true);
-        content.setFocusableInTouchMode(true);
-        content.requestFocus();
-        content.setSelection(content.getText().length());
-        AddActivity.this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        //content.setFocusable(true);
+        //content.setFocusableInTouchMode(true);
+        //content.requestFocus();
+        //content.setSelection(content.getText().length());
+       // AddActivity.this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
     //endregion
 
@@ -241,8 +250,8 @@ public class AddActivity extends AppCompatActivity {
 
         //region 监听内容、标题、状态的变化
 
-        //region 监听title
-        title.addTextChangedListener(new TextWatcher() {
+        //region 监听title  ********************************暂时没用*********
+       /* title.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -280,7 +289,7 @@ public class AddActivity extends AppCompatActivity {
             }
         });
         //endregion
-
+*/
         //状态的监听会在状态改变的时候设置
 
         //endregion
@@ -289,64 +298,51 @@ public class AddActivity extends AppCompatActivity {
        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //自动保存
-               /* if(flag.getId() == -1){
-                    //这是新建的
-                    if(isChanged){
-                        addFlag();
-                    }
-
-                }else{
-                    //这个flag是进行修改的
-                    if(isChanged){
-                        //只有当进行了修改了才更新数据库
-                        editFlag();
-                    }
-
-                }*/
+                //保存
+                saveTitle();
+                saveNoteContent();
                 finish();
             }
         });
         //endregion
-
-
-        //标题栏  光标的焦点事件
         title.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
                     // 获得焦点 开始编辑
-                    Toast.makeText(AddActivity.this, "开始编辑标题", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(AddActivity.this, "开始编辑标题", Toast.LENGTH_LONG).show();
 
                 } else {
                     // 失去焦点  执行保存
-                   // Toast.makeText(AddActivity.this, "保存编辑标题", Toast.LENGTH_LONG).show();
-                    Sqls sqls=new Sqls();
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Message message = handler.obtainMessage();
-                            user_note_list unl=new user_note_list();
-                            unl.setTitle(title.getText().toString());
-                            unl.setBid(bid);
-                            try {
-                                sqls.updateNote(unl);
-                            } catch (SQLException e) {
-                                e.printStackTrace();
-                                message.what = 0x27;
-                                message.obj ="修改标题失败" ;
-                            }
-                            handler.sendMessage(message);
-                        }
-                    }).start();
-
-
+                    // Toast.makeText(AddActivity.this, "保存编辑标题", Toast.LENGTH_LONG).show();
+                    saveTitle();
                 }
             }
         });
 
-        //内容改变
-       content.addTextChangedListener(new TextWatcher() {
+        //内容 焦点事件
+
+        content.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    // 获得焦点 开始编辑
+                    //Toast.makeText(AddActivity.this, "开始编辑内容", Toast.LENGTH_LONG).show();
+
+                } else {
+                    // 失去焦点  执行保存
+                    // Toast.makeText(AddActivity.this, "保存编辑标题", Toast.LENGTH_LONG).show();
+                    saveNoteContent();
+                }
+            }
+        });
+
+
+
+
+
+        //内容改变***********************************暂时没用
+      /* content.addTextChangedListener(new TextWatcher() {
            @Override
            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                //text  输入框中改变前的字符串信息
@@ -378,7 +374,7 @@ public class AddActivity extends AppCompatActivity {
            }
        });
 
-
+*/
 
 
 
@@ -624,25 +620,15 @@ public class AddActivity extends AppCompatActivity {
 
 
     //region 生命周期结束后自动保存
-   /* @Override
+    @Override
     protected void onStop() {
         super.onStop();
-        //自动保存
-        if(flag.getId() == -1){
-            //这是新建的
-            if(isChanged){
-                addFlag();
-            }
+        //保存
+        saveTitle();
+        saveNoteContent();
 
-        }else{
-            //这个flag是进行修改的
-            if(isChanged){
-                //只有当进行了修改了才更新数据库
-                editFlag();
-            }
-        }
-        isChanged = false;
-    }*/
+
+    }
     //endregion
 
     //region 点击返回退出时也会自动保存
@@ -669,18 +655,76 @@ public class AddActivity extends AppCompatActivity {
     }
 */
     //endregion
+    void saveTitle(){
+        Sqls sqls=new Sqls();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = handler.obtainMessage();
+                user_note_list unl=new user_note_list();
+                unl.setTitle(title.getText().toString());
+                unl.setBid(bid);
+                try {
+                    sqls.updateNote(unl);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    message.what = 0x27;
+                    message.obj ="修改标题失败" ;
+                }
+                handler.sendMessage(message);
+            }
+        }).start();
+    }
 
-    //获得光标所在行号
-    private int getCurrentCursorLine(EditText editText) {
-        int selectionStart = Selection.getSelectionStart(editText.getText());
-        Layout layout = editText.getLayout();
+    void loadcontent(){
+        Sqls sqls=new Sqls();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = handler.obtainMessage();
+                try {
+                    String string=sqls.sel_New_content(bid).getXcontent();
+                    content.setText(string);
+//                    message.what = 0x29;
+//                    message.obj ="内容加载成功" ;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    message.what = 0x30;
+                    message.obj ="内容加载失败" ;
+                }
+                handler.sendMessage(message);
+            }
+        }).start();
+    }
 
-        if (selectionStart != -1) {
+    //内容保存函数
+    void saveNoteContent(){
+        Sqls sqls=new Sqls();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = handler.obtainMessage();
+                note_content nc=new note_content();
+                nc.setBid(bid);
+                nc.setXcontent(content.getText().toString());
+                Date date=new Date();
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String dateStr = format.format(date);
+                nc.setXtime(dateStr);
+                nc.setXid(xid);
+               try {
+                    sqls.addOneNoteContent(nc);
+//                    message.what = 0x29;
+//                    message.obj ="内容保存成功" ;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    message.what = 0x30;
+                    message.obj ="内容保存失败" ;
+                }
+                handler.sendMessage(message);
+            }
+        }).start();
 
-            //Integer[] indices = getIndices(layout.getText().toString().trim(), ' ');
-            return layout.getLineForOffset(selectionStart) + 1;
-        }
-        return -1;
     }
 
 

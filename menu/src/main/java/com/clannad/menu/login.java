@@ -126,7 +126,7 @@ public class login extends AppCompatActivity {
                             sl.setBid(unl.getBid());
                             sl.setTitle(unl.getTitle());
                             //取最近一次作为显示内容
-                            String con=sqls.sel_hnum_content(unl.getBid()).getXcontent();
+                            String con=sqls.sel_New_content(unl.getBid()).getXcontent();
                             if(con!=null)
                             {sl.setA_content(con);}
                             else
@@ -159,13 +159,22 @@ public class login extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 user_note_list unl=new user_note_list(uid);
-                Sqls sqls=new Sqls();
+
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         Message message = handler.obtainMessage();
                         try {
+                            note_content nc =new note_content();
+                            nc.setBid(unl.getBid());
+                            nc.setXcontent("");
+                            nc.setXtime(unl.getCtime());
+                            nc.setXid(unl.getUid());
+
+                            Sqls sqls=new Sqls();
+
                             sqls.addOneNote(unl);
+                            sqls.startNoteContent(nc);
                             message.what = 0x24;
                             message.obj ="新建笔记成功" ;
                         } catch (SQLException e) {
@@ -182,6 +191,7 @@ public class login extends AppCompatActivity {
                 bundle.putString("bid",unl.getBid());
                 bundle.putString("title",unl.getTitle());
                 bundle.putString("ctime",unl.getCtime());
+                bundle.putString("xid",uid);
                 intent.putExtras(bundle);
                 startActivity(intent);
 
@@ -199,6 +209,7 @@ public class login extends AppCompatActivity {
                 bundle.putString("bid",sl.getBid());
                 bundle.putString("title",sl.getTitle());
                 bundle.putString("ctime",sl.getCtime());
+                bundle.putString("xid",uid);
                 intent.putExtras(bundle);
                 startActivity(intent);
             }
