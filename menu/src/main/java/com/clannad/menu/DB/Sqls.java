@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import com.clannad.menu.models.*;
 import static com.clannad.menu.DB.DBUtils.getConn;
@@ -24,7 +25,7 @@ public class Sqls {
             u.setUid(rs.getString("uid"));
             u.setBid(rs.getString("bid"));
             u.setTitle(rs.getString("title"));
-            u.setCtime(rs.getString("ctime"));
+            u.setCtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("ctime")));
             lists.add(u);
         }
         rs.close();
@@ -32,21 +33,21 @@ public class Sqls {
         return lists;
     }
 
-    //查询某笔记某一行
-    public note_content sel_hnum_content(String bid,String xhnum) throws SQLException{
+    //查询某笔记最新内容
+    public note_content sel_hnum_content(String bid) throws SQLException{
         Connection conn = getConn();
         note_content content=new note_content();
-        String sql= "select * from note_content where bid=? and xhnum=?";
+        String sql= "select * from note_content where bid=? order by xhnum asc";
         PreparedStatement psmt = conn.prepareStatement(sql);
         psmt.setString(1,bid);
-        psmt.setString(2,xhnum);
         //执行SQL语句
         ResultSet rs = psmt.executeQuery();
         while(rs.next()){
             content.setBid(rs.getString("bid"));
-            content.setXhnum(rs.getString("xhnum"));
+            content.setXhnum(rs.getInt("xhnum"));
             content.setXcontent(rs.getString("xcontent"));
-            content.setXtime(rs.getString("xtime"));
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            content.setXtime(format.format( rs.getTimestamp("xtime")));
             content.setXid(rs.getString("xid"));
         }
         rs.close();

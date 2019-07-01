@@ -43,8 +43,10 @@ public class user_note_list {
         this.uid=uid;
         Date date=new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss");
-        String d=dateFormat.format(date).toString();
-        this.ctime=d;
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String dateStr = format.format(date);
+        String d=dateFormat.format(date);
+        this.ctime=dateStr;
         this.bid=uid+"-"+d;
         this.title="新建笔记";
     }

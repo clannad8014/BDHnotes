@@ -676,6 +676,8 @@ public class AddActivity extends AppCompatActivity {
         Layout layout = editText.getLayout();
 
         if (selectionStart != -1) {
+
+            //Integer[] indices = getIndices(layout.getText().toString().trim(), ' ');
             return layout.getLineForOffset(selectionStart) + 1;
         }
         return -1;

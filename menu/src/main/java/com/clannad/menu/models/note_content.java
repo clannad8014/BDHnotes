@@ -2,7 +2,16 @@ package com.clannad.menu.models;
 
 public class note_content {
     String bid;
-    String xhnum;
+
+    public int getXhnum() {
+        return xhnum;
+    }
+
+    public void setXhnum(int xhnum) {
+        this.xhnum = xhnum;
+    }
+
+    int xhnum;
     String xcontent;
     String xtime;
 
@@ -14,13 +23,6 @@ public class note_content {
         this.bid = bid;
     }
 
-    public String getXhnum() {
-        return xhnum;
-    }
-
-    public void setXhnum(String xhnum) {
-        this.xhnum = xhnum;
-    }
 
     public String getXcontent() {
         return xcontent;

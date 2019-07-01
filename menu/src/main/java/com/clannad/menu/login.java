@@ -125,8 +125,8 @@ public class login extends AppCompatActivity {
                             sl=new show_list();
                             sl.setBid(unl.getBid());
                             sl.setTitle(unl.getTitle());
-                            //取第一行作为显示内容
-                            String con=sqls.sel_hnum_content(unl.getBid(), "1").getXcontent();
+                            //取最近一次作为显示内容
+                            String con=sqls.sel_hnum_content(unl.getBid()).getXcontent();
                             if(con!=null)
                             {sl.setA_content(con);}
                             else
