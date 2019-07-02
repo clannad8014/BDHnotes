@@ -64,6 +64,7 @@ public class AddActivity extends AppCompatActivity {
     String ttt ;
     String ctime ;
     String xid;
+    String neirong;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -123,6 +124,7 @@ public class AddActivity extends AppCompatActivity {
         ttt = bundle.getString("title");
         ctime = bundle.getString("ctime");
         xid = bundle.getString("xid");
+        neirong=bundle.getString("neirong");
         //初始化基本参数
         init();
 
@@ -146,7 +148,9 @@ public class AddActivity extends AppCompatActivity {
         //region 初始化内容对象并初始化值
         title.setText(ttt);
         //初始化文本内容
-        loadcontent();
+        //System.out.println(neirong);
+        //content.setText(neirong);
+        //loadcontent();
 
         initContent();
 
@@ -584,7 +588,7 @@ public class AddActivity extends AppCompatActivity {
     //  https://segmentfault.com/q/1010000004268968
     //  http://www.jb51.net/article/102683.htm
     private void initContent(){
-        String input ="";
+        String input =neirong;
         Pattern p = Pattern.compile("\\<img src=\".*?\"\\/>");
         Matcher m = p.matcher(input);
         SpannableString spannable = new SpannableString(input);
@@ -714,8 +718,8 @@ public class AddActivity extends AppCompatActivity {
                 nc.setXid(xid);
                try {
                     sqls.addOneNoteContent(nc);
-//                    message.what = 0x29;
-//                    message.obj ="内容保存成功" ;
+                    message.what = 0x29;
+                    message.obj ="内容保存成功" ;
                 } catch (SQLException e) {
                     e.printStackTrace();
                     message.what = 0x30;

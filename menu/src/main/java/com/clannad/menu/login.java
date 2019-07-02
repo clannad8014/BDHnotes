@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -199,6 +200,8 @@ public class login extends AppCompatActivity {
         });
     }
 
+
+//listview点击事件
     public void clickOneNote(){
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -210,7 +213,10 @@ public class login extends AppCompatActivity {
                 bundle.putString("title",sl.getTitle());
                 bundle.putString("ctime",sl.getCtime());
                 bundle.putString("xid",uid);
+                bundle.putString("neirong", sl.getA_content());
+                //System.out.println(sl.getA_content()+"------------------");
                 intent.putExtras(bundle);
+               // intent.putExtra("sl", (Parcelable) sl);
                 startActivity(intent);
             }
         });
