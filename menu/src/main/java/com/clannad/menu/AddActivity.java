@@ -101,6 +101,7 @@ public class AddActivity extends AppCompatActivity {
             switch (msg.what){
                 case 0x27:case 0x28:case 0x29:case 0x30:
                     String s = (String) msg.obj;
+                    System.out.println(s);
                     Toast.makeText(AddActivity.this, s, Toast.LENGTH_LONG).show();
                     break;
 

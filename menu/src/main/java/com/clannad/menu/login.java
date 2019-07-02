@@ -43,6 +43,7 @@ public class login extends AppCompatActivity {
             switch (msg.what){
                 case 0x20: case 0x21:case 0x23:case 0x24:case 0x25:case 0x26:
                     String s = (String) msg.obj;
+                    System.out.println(s);
                     Toast.makeText(login.this, s, Toast.LENGTH_LONG).show();
                     break;
                 case 0x22:
@@ -54,6 +55,7 @@ public class login extends AppCompatActivity {
                     noteAdapter=new NoteAdapter(login.this,R.layout.flag,show_lists);
                     listView = findViewById(R.id.lv_flags);
                     listView.setAdapter(noteAdapter);
+                    System.out.println("加载成功！！！！！！！");
                     Toast.makeText(login.this,"加载成功！！！！！！！", Toast.LENGTH_SHORT).show();
                     //增加笔记
                     addNote();
@@ -103,6 +105,7 @@ public class login extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        System.out.println("请等待几秒钟加载列表");
         Toast.makeText(login.this, "请等待几秒钟加载列表", Toast.LENGTH_SHORT).show();
         loadUserNoteList();
     }
