@@ -54,6 +54,7 @@ public class login extends AppCompatActivity {
                     noteAdapter=new NoteAdapter(login.this,R.layout.flag,show_lists);
                     listView = findViewById(R.id.lv_flags);
                     listView.setAdapter(noteAdapter);
+                    Toast.makeText(login.this,"加载成功！！！！！！！", Toast.LENGTH_SHORT).show();
                     //增加笔记
                     addNote();
                     //点击一个笔记进入
@@ -91,8 +92,7 @@ public class login extends AppCompatActivity {
             ActivityCompat.requestPermissions(login.this,PERMISSIONS_STORAGE,REQUEST_EXTERNAL_STORAGE);
         }
 ////////////
-        //加载笔记列表
-        loadUserNoteList();
+
 
 
 
@@ -103,6 +103,7 @@ public class login extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Toast.makeText(login.this, "请等待几秒钟加载列表", Toast.LENGTH_SHORT).show();
         loadUserNoteList();
     }
 
@@ -111,7 +112,6 @@ public class login extends AppCompatActivity {
 
     //加载listview
     void loadUserNoteList(){
-
         Sqls sqls=new Sqls();
         new Thread(new Runnable() {
             @Override
@@ -193,6 +193,7 @@ public class login extends AppCompatActivity {
                 bundle.putString("title",unl.getTitle());
                 bundle.putString("ctime",unl.getCtime());
                 bundle.putString("xid",uid);
+                bundle.putString("neirong","");
                 intent.putExtras(bundle);
                 startActivity(intent);
 

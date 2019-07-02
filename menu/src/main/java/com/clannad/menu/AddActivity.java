@@ -60,11 +60,14 @@ import java.util.regex.Pattern;
 import com.clannad.menu.models.*;
 
 public class AddActivity extends AppCompatActivity {
-    String bid ;
-    String ttt ;
-    String ctime ;
-    String xid;
-    String neirong;
+    String bid ; //笔记号
+    String ttt ; //笔记标题
+    String ctime ;//创建时间
+    String xid; //编辑人
+    String neirong; //初始内容
+    String beforettt;//编辑后前一步的标题
+    String beforeneirong;//编辑后前一步的内容
+    boolean isclose=false;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -74,11 +77,8 @@ public class AddActivity extends AppCompatActivity {
     //插入图片的Activity的返回的code
     static final int IMAGE_CODE = 99;
 
-    //数据库帮助类
-   // DataBaseUtil dbUtil;
 
     //内容对象
-   // Flag flag;      //传进来的flag
     Date date;      //点进来的时候的时间
     Boolean isChanged = false;      //判断内容是否被修改过
 
@@ -89,7 +89,6 @@ public class AddActivity extends AppCompatActivity {
     EditText content;           //内容
     ScrollView scrollView;      //整个view
     EditText title;             //标题
-    Dialog dialog;              //底部弹窗
     View hrView;                //最下方菜单栏的那个横线
     View bottomMenu;            //最下方菜单栏
 
@@ -104,8 +103,6 @@ public class AddActivity extends AppCompatActivity {
                     String s = (String) msg.obj;
                     Toast.makeText(AddActivity.this, s, Toast.LENGTH_LONG).show();
                     break;
-               // case 0x28:
-                 //    msg.obj;
 
             }
 
@@ -125,6 +122,8 @@ public class AddActivity extends AppCompatActivity {
         ctime = bundle.getString("ctime");
         xid = bundle.getString("xid");
         neirong=bundle.getString("neirong");
+        beforettt=ttt;
+        beforeneirong=neirong;
         //初始化基本参数
         init();
 
@@ -147,18 +146,9 @@ public class AddActivity extends AppCompatActivity {
 
         //region 初始化内容对象并初始化值
         title.setText(ttt);
-        //初始化文本内容
-        //System.out.println(neirong);
-        //content.setText(neirong);
-        //loadcontent();
-
         initContent();
-
         //初始化toolBar
         initToolBar();
-
-
-
 
         //默认让内容获取焦点，但是并不弹出软键盘
         //content.setFocusable(true);
@@ -252,59 +242,10 @@ public class AddActivity extends AppCompatActivity {
         });*/
         //endregion
 
-        //region 监听内容、标题、状态的变化
-
-        //region 监听title  ********************************暂时没用*********
-       /* title.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                Log.d("YYPT_TITLE_CHANGE", "onTextChanged: ");
-                isChanged = true;
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-        //endregion
-
-        //region 监听content
-        content.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                Log.d("YYPT_CONTENT_CHANGE", "onTextChanged: ");
-                isChanged = true;
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-        //endregion
-*/
-        //状态的监听会在状态改变的时候设置
-
-        //endregion
-
         //region toolbar的返回键点击事件
        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //保存
-                saveTitle();
-                saveNoteContent();
                 finish();
             }
         });
@@ -312,14 +253,15 @@ public class AddActivity extends AppCompatActivity {
         title.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    // 获得焦点 开始编辑
-                    //Toast.makeText(AddActivity.this, "开始编辑标题", Toast.LENGTH_LONG).show();
-
-                } else {
-                    // 失去焦点  执行保存
-                    // Toast.makeText(AddActivity.this, "保存编辑标题", Toast.LENGTH_LONG).show();
+                if(!beforettt.equals(title.getText().toString()))
+                {
                     saveTitle();
+                    beforettt=title.getText().toString();
+                    System.out.println("保存完标题");
+                }
+                else
+                {
+                    System.out.println("标题未做任何修改");
                 }
             }
         });
@@ -329,58 +271,27 @@ public class AddActivity extends AppCompatActivity {
         content.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
+
                 if (hasFocus) {
                     // 获得焦点 开始编辑
-                    //Toast.makeText(AddActivity.this, "开始编辑内容", Toast.LENGTH_LONG).show();
+                    System.out.println("开始编辑内容");
 
                 } else {
                     // 失去焦点  执行保存
                     // Toast.makeText(AddActivity.this, "保存编辑标题", Toast.LENGTH_LONG).show();
-                    saveNoteContent();
+                    if(!beforeneirong.equals(content.getText().toString()))
+                    {
+                        saveNoteContent();
+                        beforeneirong=content.getText().toString();
+                        System.out.println("保存完内容");
+                    }
+                    else {
+                        System.out.println("内容未做修改");
+                    }
                 }
             }
+
         });
-
-
-
-
-
-        //内容改变***********************************暂时没用
-      /* content.addTextChangedListener(new TextWatcher() {
-           @Override
-           public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-               //text  输入框中改变前的字符串信息
-               //start 输入框中改变前的字符串的起始位置
-               //count 输入框中改变前后的字符串改变数量一般为0
-               //after 输入框中改变后的字符串与起始位置的偏移量
-
-
-           }
-
-           @Override
-           public void onTextChanged(CharSequence s, int start, int before, int count) {
-               //text  输入框中改变后的字符串信息
-               //start 输入框中改变后的字符串的起始位置
-               //before 输入框中改变前的字符串的位置 默认为0
-               //count 输入框中改变后的一共输入字符串的数量
-               System.out.println(start+"***"+before+"*****"+count);
-               int xxxx=getCurrentCursorLine(content);
-               System.out.println(xxxx+"+++++++++++++++++++");
-               System.out.println(content.getText());
-
-
-           }
-
-           @Override
-           public void afterTextChanged(Editable s) {
-               //edit  输入结束呈现在输入框中的信息
-
-           }
-       });
-
-*/
-
-
 
 
 
@@ -395,9 +306,7 @@ public class AddActivity extends AppCompatActivity {
     private void initToolBar() {
 
         //设置显示的文字
-        date = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("MM月dd日 HH:MM");
-        toolbar.setTitle(sdf.format(date));
+        toolbar.setTitle("(っ•̀ω•́)っ✎⁾⁾  我爱学习");
 
         //将toolBar设置为该界面的Bar
         setSupportActionBar(toolbar);
@@ -533,54 +442,7 @@ public class AddActivity extends AppCompatActivity {
     //endregion
 
 
-    //region 新建flag，并将id赋给这个flag
-   /* private void addFlag(){
 
-        //String s = Html.fromHtml(content.getText());
-        //Log.d("YYPT_ADD",);
-        try {
-            Date thisDate = new Date();
-            SQLiteDatabase db = dbUtil.getWritableDatabase();
-            String sql = "insert into flag(state,color,title,content,date) " +
-                    "values('" + state.getText().toString() + "'," +
-                    "'" + flag.getColor() + "'," +
-                    "'" + title.getText().toString() + "'," +
-                    "'" + content.getText().toString() + "'," +
-                    "'" + thisDate + "')";
-            Log.d("YYPT", sql);
-            db.execSQL(sql);
-            //Toast.makeText(AddFlagActivity.this,"保存成功",Toast.LENGTH_SHORT).show();
-
-            //保存后必须将这个flag的Id赋给它，不然会一直新建
-            setFlagId();
-
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-    }*/
-    //endregion
-
-    //region 编辑flag
-    /*
-    private void editFlag(){
-        int id = flag.getId();
-        try {
-            Date thisDate = new Date();
-            SQLiteDatabase db = dbUtil.getWritableDatabase();
-            String sql = "update flag set state='"+state.getText().toString().trim()+"'," +
-                    "color='"+flag.getColor()+"'," +
-                    "title='"+title.getText().toString()+"'," +
-                    "content='"+content.getText().toString()+"'," +
-                    "date='"+thisDate+"' where id="+id+"";
-            Log.d("YYPT", sql);
-            db.execSQL(sql);
-            //Toast.makeText(AddFlagActivity.this,"保存成功",Toast.LENGTH_SHORT).show();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }*/
-    //endregion
 
 
     //region 初始化content内容，参考：
@@ -628,37 +490,32 @@ public class AddActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         //保存
-        saveTitle();
-        saveNoteContent();
-
-
-    }
-    //endregion
-
-    //region 点击返回退出时也会自动保存
-   /* @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if(event.getKeyCode() == KeyEvent.KEYCODE_BACK){
-            //自动保存
-           if(flag.getId() == -1){
-                //这是新建的
-                if(isChanged){
-                    addFlag();
-                }
-
-            }else{
-                //这个flag是进行修改的
-                if(isChanged){
-                    //只有当进行了修改了才更新数据库
-                    editFlag();
-                }
-            }
-            isChanged = false;
+        if(!beforettt.equals(title.getText().toString()))
+        {
+            saveTitle();
+            beforettt=title.getText().toString();
+            System.out.println("保存完标题(关闭触发)");
         }
-        return super.onKeyDown(keyCode, event);
+        else
+        {
+            System.out.println("标题未做任何修改");
+        }
+
+        if(!beforeneirong.equals(content.getText().toString()))
+        {
+            saveNoteContent();
+            beforeneirong=content.getText().toString();
+            System.out.println("保存完内容(关闭触发)");
+        }
+        else {
+            System.out.println("内容未做修改");
+        }
+
+
+
     }
-*/
     //endregion
+
     void saveTitle(){
         Sqls sqls=new Sqls();
         new Thread(new Runnable() {
@@ -674,27 +531,6 @@ public class AddActivity extends AppCompatActivity {
                     e.printStackTrace();
                     message.what = 0x27;
                     message.obj ="修改标题失败" ;
-                }
-                handler.sendMessage(message);
-            }
-        }).start();
-    }
-
-    void loadcontent(){
-        Sqls sqls=new Sqls();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Message message = handler.obtainMessage();
-                try {
-                    String string=sqls.sel_New_content(bid).getXcontent();
-                    content.setText(string);
-//                    message.what = 0x29;
-//                    message.obj ="内容加载成功" ;
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    message.what = 0x30;
-                    message.obj ="内容加载失败" ;
                 }
                 handler.sendMessage(message);
             }
@@ -718,11 +554,13 @@ public class AddActivity extends AppCompatActivity {
                 nc.setXid(xid);
                try {
                     sqls.addOneNoteContent(nc);
-                    message.what = 0x29;
-                    message.obj ="内容保存成功" ;
+                   // message.what = 0x29;
+                   // message.obj ="内容保存成功" ;
+                   System.out.println("内容保存成功(焦点)");
                 } catch (SQLException e) {
                     e.printStackTrace();
                     message.what = 0x30;
+                   System.out.println("内容保存失败");
                     message.obj ="内容保存失败" ;
                 }
                 handler.sendMessage(message);
