@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -23,6 +24,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -46,9 +48,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ScrollView;
@@ -68,6 +72,7 @@ import java.util.regex.Pattern;
 import com.clannad.menu.models.*;
 
 public class AddActivity extends AppCompatActivity {
+    int delPosition=-1;            //用来删除的一个变量，因为内部类要用
     String bid ; //笔记号
     String ttt ; //笔记标题
     String ctime ;//创建时间
@@ -105,7 +110,12 @@ public class AddActivity extends AppCompatActivity {
     NavigationView navigationView; //历史菜单页
     View view;  //拿到右滑菜单
     Button btn_history;//历史菜单的btn
-    ListView listView;  //历史菜单的listview
+    ListView lv_history;  //历史菜单的listview
+
+    LinearLayout awindow; //查看某个历史那一块区域
+    EditText content_history;//文本
+    Button btn_allupdate; //全部替换
+    Button btn_closewindow;//关闭该区域
 
 
     @SuppressLint("HandlerLeak")
@@ -114,7 +124,7 @@ public class AddActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
 
             switch (msg.what){
-                case 0x27:case 0x28:case 0x29:case 0x30:case 0x31:
+                case 0x27:case 0x28:case 0x29:case 0x30:case 0x31: case 0x33: case 0x34:
                     String s = (String) msg.obj;
                     System.out.println(s);
                     Toast.makeText(AddActivity.this, s, Toast.LENGTH_LONG).show();
@@ -122,10 +132,14 @@ public class AddActivity extends AppCompatActivity {
                 case 0x32:
                     note_contents= (ArrayList<note_content>) msg.obj;
                     historyAdapter=new HistoryAdapter(AddActivity.this,R.layout.history_cell,note_contents);
-                  listView.setAdapter(historyAdapter);
-                    setListViewHeightBasedOnChildren(listView);//显示多行
+                  lv_history.setAdapter(historyAdapter);
+                    setListViewHeightBasedOnChildren(lv_history);//显示多行
                     System.out.println("历史加载成功！！！！！！！");
-                   // Toast.makeText(AddActivity.this,"加载成功！！！！！！！", Toast.LENGTH_SHORT).show();
+                   //Toast.makeText(AddActivity.this,"历史加载成功！！！！！！！", Toast.LENGTH_SHORT).show();
+                   //点击事件
+                    lvHistoryClick();
+                   //长按事件
+                   lvHistoryLongClick();
                     break;
 
 
@@ -169,8 +183,13 @@ public class AddActivity extends AppCompatActivity {
 
         navigationView=findViewById(R.id.nv_history);
         view=navigationView.getHeaderView(0);
-        listView=view.findViewById(R.id.lv_history);
+        lv_history=view.findViewById(R.id.lv_history);
         btn_history=view.findViewById(R.id.btn_history);
+
+        awindow=findViewById(R.id.awindow);
+        content_history=findViewById(R.id.et_edit_content_history);
+        btn_allupdate=findViewById(R.id.btn_allupdate);
+        btn_closewindow=findViewById(R.id.btn_closewindow);
 
 
 
@@ -346,28 +365,28 @@ public class AddActivity extends AppCompatActivity {
         btn_history.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Sqls sqls=new Sqls();
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Message message = handler.obtainMessage();
-                        try {
-                            ArrayList<note_content> note_contents=sqls.selAllNoteContent(bid);
-                            message.what = 0x32;
-                            message.obj =note_contents ;
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                            message.what = 0x31;
-                            message.obj ="查询过程出错" ;
-                        }
-                        handler.sendMessage(message);
-                    }
-                }).start();
+                loadHistoryList();
 
             }
         });
 
-        //某个历史的点击事件
+
+        btn_allupdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                content.setText(content_history.getText());
+
+            }
+        });
+
+        btn_closewindow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                awindow.setVisibility(View.GONE);
+
+            }
+        });
+
 
 
 
@@ -669,6 +688,92 @@ public class AddActivity extends AppCompatActivity {
 // listView.getDividerHeight()获取子项间分隔符占用的高度
 // params.height最后得到整个ListView完整显示需要的高度
         listView.setLayoutParams(params);
+    }
+    //加载历史列表
+    void loadHistoryList(){
+        Sqls sqls=new Sqls();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = handler.obtainMessage();
+                try {
+                    ArrayList<note_content> note_contents=sqls.selAllNoteContent(bid);
+                    message.what = 0x32;
+                    message.obj =note_contents ;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    message.what = 0x31;
+                    message.obj ="查询过程出错" ;
+                }
+                handler.sendMessage(message);
+            }
+        }).start();
+    }
+
+
+    //历史列表的点击事件
+    void lvHistoryClick(){
+        lv_history.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                note_content nc=note_contents.get(position);
+                awindow.setVisibility(View.VISIBLE);
+                content_history.setText(nc.getXcontent());
+                Toast.makeText(AddActivity.this, "已加载", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+    //历史列表的长按事件
+    void lvHistoryLongClick(){
+        lv_history.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+                delPosition = position;
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(AddActivity.this);
+                builder.setIcon(R.drawable.flag4_2);
+                builder.setTitle("当前版本号："+note_contents.get(delPosition).getXhnum());
+                builder.setMessage("是否要删除？");
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        System.out.println("请等待几秒钟加载列表");
+                        //Toast.makeText(AddActivity.this, "请等待几秒钟加载历史列表", Toast.LENGTH_SHORT).show();
+                        //确定删除
+                        Sqls sqls=new Sqls();
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Message message = handler.obtainMessage();
+                                try {
+                                   sqls.deleteOneNoteHistory(note_contents.get(delPosition));
+                                    message.what = 0x33;
+                                    message.obj ="删除该历史成功" ;
+                                    loadHistoryList();
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                    message.what = 0x34;
+                                    message.obj ="删除该历史失败" ;
+                                }
+
+                                handler.sendMessage(message);
+                            }
+                        }).start();
+                    }
+                });
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //取消
+                    }
+                });
+                builder.show();
+                return true;
+            }
+        });
+
     }
 
 

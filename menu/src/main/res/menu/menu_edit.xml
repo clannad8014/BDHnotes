@@ -5,7 +5,7 @@
     tools:context=".MainActivity">
 
     <item android:id="@+id/menu_history"
-        android:title="历史1"
+        android:title="历史"
         android:orderInCategory="80"
         app:showAsAction="always"/>
 

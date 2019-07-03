@@ -20,21 +20,6 @@
         android:paddingBottom="6dp"
         android:visibility="gone"
         />
-    <TextView
-        android:id="@+id/tv_history_xid"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:ellipsize="end"
-        android:singleLine="true"
-        android:textStyle="bold"
-        android:textColor="#111"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="6dp"
-        android:visibility="gone"
-        />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,7 +28,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="3"
+            android:layout_weight="2"
             android:ellipsize="end"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
@@ -67,11 +52,47 @@
             android:textStyle="bold" />
 
     </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:ellipsize="end"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:singleLine="true"
+            android:text="编辑人id："
+            android:textColor="#111"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_history_xid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:ellipsize="end"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:singleLine="true"
+            android:textColor="#111"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+
     <TextView
         android:id="@+id/tv_history_xcontent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ellipsize="end"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
         android:singleLine="true"
@@ -79,18 +100,40 @@
         android:textSize="16sp"
         android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/tv_history_xtime"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:paddingBottom="20dp"
-        android:singleLine="true"
-        android:textColor="#111"
-        android:textStyle="bold"
-        android:textSize="16sp" />
+        android:orientation="horizontal"
+        android:paddingBottom="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="5"
+            android:ellipsize="end"
+            android:paddingLeft="20dp"
+            android:paddingRight="10dp"
+            android:singleLine="true"
+            android:text="时间："
+            android:textColor="#111"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_history_xtime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:ellipsize="end"
+            android:paddingLeft="10dp"
+            android:paddingRight="20dp"
+            android:singleLine="true"
+            android:textColor="#111"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            />
+
+    </LinearLayout>
 
 
 </LinearLayout>

@@ -105,6 +105,7 @@ public class Sqls {
         psmt.execute();
         psmt.close();
     }
+
     //更改笔记标题
     public void updateNote(user_note_list unl)throws SQLException{
         //首先拿到数据库的连接
@@ -166,6 +167,40 @@ public class Sqls {
         rs.close();
         psmt.close();
         return lists;
+    }
+
+    //删除某条历史
+    public void deleteOneNoteHistory(note_content nc) throws SQLException{
+        Connection conn = getConn();
+        String sql="delete from note_content where bid = ? and xhnum=?";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setString(1,nc.getBid());
+        psmt.setInt(2,nc.getXhnum());
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+
+    //查询某条历史
+    public  note_content selOneNoteContent(note_content nc) throws SQLException {
+        Connection conn = getConn();
+        String sql= "select * from note_content where bid = ? and xhnum=? ";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setString(1,nc.getBid());
+        psmt.setInt(2,nc.getXhnum());
+        //执行SQL语句
+        ResultSet rs = psmt.executeQuery();
+        note_content n= new note_content();
+        while(rs.next()){
+            n.setBid(rs.getString("bid"));
+            n.setXhnum(rs.getInt("xhnum"));
+            n.setXcontent(rs.getString("xcontent"));
+            n.setXtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("xtime")));
+            n.setXid(rs.getString("xid"));
+        }
+        rs.close();
+        psmt.close();
+        return n;
     }
 
 

@@ -56,6 +56,7 @@ public class login extends AppCompatActivity {
                     noteAdapter=new NoteAdapter(login.this,R.layout.flag,show_lists);
                     listView = findViewById(R.id.lv_flags);
                     listView.setAdapter(noteAdapter);
+
                     System.out.println("加载成功！！！！！！！");
                     Toast.makeText(login.this,"加载成功！！！！！！！", Toast.LENGTH_SHORT).show();
                     //增加笔记
@@ -97,12 +98,6 @@ public class login extends AppCompatActivity {
             ActivityCompat.requestPermissions(login.this,PERMISSIONS_STORAGE,REQUEST_EXTERNAL_STORAGE);
         }
 ////////////
-
-
-
-
-
-
     }
     //region 当重新进入该activity后，需要重新初始化一下
     @Override
@@ -213,6 +208,7 @@ public class login extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
                 show_list sl= show_lists.get(i);
                 Intent intent = new Intent(login.this,AddActivity.class);
                 Bundle bundle = new Bundle();
@@ -225,6 +221,7 @@ public class login extends AppCompatActivity {
                 intent.putExtras(bundle);
                // intent.putExtra("sl", (Parcelable) sl);
                 startActivity(intent);
+
             }
         });
     }
@@ -243,6 +240,8 @@ public class login extends AppCompatActivity {
                 builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        System.out.println("请等待几秒钟加载列表");
+                        Toast.makeText(login.this, "请等待几秒钟加载列表", Toast.LENGTH_SHORT).show();
                         //确定删除
                             Sqls sqls=new Sqls();
                             new Thread(new Runnable() {

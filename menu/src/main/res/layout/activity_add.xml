@@ -13,7 +13,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FCF9F9"
+        android:background="#4A0777FF"
         tools:context=".AddActivity">
 
         <android.support.v7.widget.Toolbar
@@ -38,18 +38,48 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_above="@id/view_edit_1"
+    android:layout_below="@id/et_edit_title">
+    <ScrollView
+        android:id="@+id/sv_edit_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="18dp"
+        android:layout_marginRight="18dp"
+        android:layout_weight="1"
+        >
 
+        <EditText
+            android:id="@+id/et_edit_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:gravity="top"
+            android:hint="请输入内容"
+            android:textColor="#050000"
+            android:textSize="16sp" />
+    </ScrollView>
+    <LinearLayout
+        android:visibility="gone"
+        android:background="#4803A9F4"
+        android:id="@+id/awindow"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
         <ScrollView
-            android:id="@+id/sv_edit_view"
+            android:id="@+id/sv_edit_view_history"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@id/view_edit_1"
-            android:layout_below="@id/et_edit_title"
             android:layout_marginLeft="18dp"
-            android:layout_marginRight="18dp">
-
+            android:layout_marginRight="18dp"
+            android:layout_weight="1">
             <EditText
-                android:id="@+id/et_edit_content"
+                android:id="@+id/et_edit_content_history"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@null"
@@ -58,6 +88,38 @@
                 android:textColor="#050000"
                 android:textSize="16sp" />
         </ScrollView>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="18dp"
+            android:layout_marginRight="18dp"
+            android:layout_weight="5">
+            <Button
+                android:background="#4803A9F4"
+                android:id="@+id/btn_allupdate"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:text="全部替换"/>
+            <Button
+                android:background="#4803A9F4"
+                android:id="@+id/btn_closewindow"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:text="关闭该历史"/>
+        </LinearLayout>
+    </LinearLayout>
+
+
+
+
+</LinearLayout>
+
+
+
 
 
         <View
