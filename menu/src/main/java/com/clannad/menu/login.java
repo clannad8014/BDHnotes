@@ -63,7 +63,7 @@ public class login extends AppCompatActivity {
                     //点击一个笔记进入
                     clickOneNote();
                     //长按删除一个笔记
-                    longClickNote();
+                    longClickNote();break;
 
 
             }

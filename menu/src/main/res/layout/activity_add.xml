@@ -98,8 +98,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-        app:headerLayout="@layout/history_header"
-    app:menu="@layout/history"
+    app:headerLayout="@layout/history_header"
 
     >
 

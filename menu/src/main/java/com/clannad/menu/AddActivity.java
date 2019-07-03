@@ -42,11 +42,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -74,7 +77,7 @@ public class AddActivity extends AppCompatActivity {
     String beforeneirong;//编辑后前一步的内容
     ArrayList<note_content> note_contents; //历史记录列表
     HistoryAdapter historyAdapter;
-    ListView listView;
+
 
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -97,10 +100,12 @@ public class AddActivity extends AppCompatActivity {
     EditText content;           //内容
     ScrollView scrollView;      //整个view
     EditText title;             //标题
-    View hrView;                //最下方菜单栏的那个横线
+    View view;  //拿到右滑菜单
     View bottomMenu;            //最下方菜单栏
     DrawerLayout drawerLayout;   //整个页面
     NavigationView navigationView; //历史菜单页
+    Button btn_history;//历史菜单的btn
+    ListView listView;  //历史菜单的listview
 
 
     @SuppressLint("HandlerLeak")
@@ -121,15 +126,13 @@ public class AddActivity extends AppCompatActivity {
                         System.out.println(n.getBid()+"***"+n.getXhnum()+"***"+n.getXcontent()+"****"+n.getXtime()+"****"+n.getXid());
                     }*/
                     historyAdapter=new HistoryAdapter(AddActivity.this,R.layout.history_cell,note_contents);
-                    View view=navigationView.getHeaderView(0);
-                    listView=view.findViewById(R.id.lv_history);
 
-//                    View view=AddActivity.this.getLayoutInflater().inflate(R.layout.history_header, null);
-//                    listView=view.findViewById(R.id.lv_history);
 
                   listView.setAdapter(historyAdapter);
+                    setListViewHeightBasedOnChildren(listView);//显示多行
                     System.out.println("历史加载成功！！！！！！！");
                    // Toast.makeText(AddActivity.this,"加载成功！！！！！！！", Toast.LENGTH_SHORT).show();
+                    break;
 
 
             }
@@ -145,7 +148,6 @@ public class AddActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_add);
-
         Bundle bundle = getIntent().getExtras();
         bid = bundle.getString("bid");
         ttt = bundle.getString("title");
@@ -169,10 +171,13 @@ public class AddActivity extends AppCompatActivity {
         content = findViewById(R.id.et_edit_content);
         scrollView = findViewById(R.id.sv_edit_view);
         title = findViewById(R.id.et_edit_title);
-        hrView = findViewById(R.id.view_edit_1);
         bottomMenu = findViewById(R.id.rl_edit_bottom);
         drawerLayout=findViewById(R.id.drawerlayout);
+
         navigationView=findViewById(R.id.nv_history);
+        view=navigationView.getHeaderView(0);
+        listView=view.findViewById(R.id.lv_history);
+        btn_history=view.findViewById(R.id.btn_history);
 
 
 
@@ -315,10 +320,11 @@ public class AddActivity extends AppCompatActivity {
 
         });
         //查看历史点击事件
+        /*
+        //menu版本   目前不需要用 先保存防身
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                System.out.println("77777777777777777779999999999");
                 if(menuItem.getItemId()==R.id.sel_history)
                 {
 
@@ -342,7 +348,32 @@ public class AddActivity extends AppCompatActivity {
                 }
                 return false;
             }
+        });*/
+
+        btn_history.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Sqls sqls=new Sqls();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Message message = handler.obtainMessage();
+                        try {
+                            ArrayList<note_content> note_contents=sqls.selAllNoteContent(bid);
+                            message.what = 0x32;
+                            message.obj =note_contents ;
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            message.what = 0x31;
+                            message.obj ="查询过程出错" ;
+                        }
+                        handler.sendMessage(message);
+                    }
+                }).start();
+
+            }
         });
+
 
 
 
@@ -619,6 +650,34 @@ public class AddActivity extends AppCompatActivity {
         }).start();
 
     }
+
+
+
+    //解决listview只显示一条数据的bug
+    public void setListViewHeightBasedOnChildren(ListView listView) {
+// 获取ListView对应的Adapter
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null) {
+            return;
+        }
+        int totalHeight = 0;
+        for (int i = 0, len = listAdapter.getCount(); i < len; i++) {
+// listAdapter.getCount()返回数据项的数目
+            View listItem = listAdapter.getView(i, null, listView);
+// 计算子项View 的宽高
+            listItem.measure(0, 0);
+// 统计所有子项的总高度
+            totalHeight += listItem.getMeasuredHeight();
+        }
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight+ (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+// listView.getDividerHeight()获取子项间分隔符占用的高度
+// params.height最后得到整个ListView完整显示需要的高度
+        listView.setLayoutParams(params);
+    }
+
+
+
 
 
 }
