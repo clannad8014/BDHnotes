@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -86,6 +87,8 @@ public class login extends AppCompatActivity {
         addBtn=findViewById(R.id.iv_add_flag);
         Bundle bundle = getIntent().getExtras();
         uid = bundle.getString("uid");
+
+
 
 //**********************读写 目前还未用
         int permission_WRITE = ActivityCompat.checkSelfPermission(login.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);

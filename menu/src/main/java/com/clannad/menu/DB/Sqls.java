@@ -79,7 +79,7 @@ public class Sqls {
     public void startNoteContent(note_content nc)throws SQLException{
         //首先拿到数据库的连接
         Connection conn = getConn();
-        String sql= "insert into note_content (bid,xhnum,xcontent,xtime,xid) values(?,1,?,?,?)";//参数用?表示，相当于占位符;
+        String sql= "insert into note_content (bid,xhnum,xcontent,xtime,xid) values(?,0,?,?,?)";//参数用?表示，相当于占位符;
 
         //预编译sql语句
         PreparedStatement psmt = conn.prepareStatement(sql);
@@ -144,6 +144,29 @@ public class Sqls {
         psmt.close();
     }
 
+    //查询某笔记所有历史
+    public  ArrayList<note_content> selAllNoteContent(String bid) throws SQLException {
+        Connection conn = getConn();
+        ArrayList<note_content> lists=new ArrayList<>();
+        String sql= "select * from note_content where bid = ? and not xhnum=0 order by xhnum desc";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setString(1,bid);
+        //执行SQL语句
+        ResultSet rs = psmt.executeQuery();
+        note_content n;
+        while(rs.next()){
+            n = new note_content();
+            n.setBid(rs.getString("bid"));
+            n.setXhnum(rs.getInt("xhnum"));
+            n.setXcontent(rs.getString("xcontent"));
+            n.setXtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("xtime")));
+            n.setXid(rs.getString("xid"));
+            lists.add(n);
+        }
+        rs.close();
+        psmt.close();
+        return lists;
+    }
 
 
 

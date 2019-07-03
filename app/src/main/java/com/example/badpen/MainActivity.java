@@ -42,9 +42,9 @@ public class MainActivity extends Activity {
                 for(int i=0;i<files.length;i++) {
                     try {
                         in = new FileInputStream(files[i]);
-                        boolean flag = FileTool.uploadFile("17.8.119.77", 21, "android", "android",
-                                "/", "412424123412341234_20130715120334_" + i + ".jpg", in);
-                        System.out.println(flag);
+//                        boolean flag = FileTool.uploadFile("17.8.119.77", 21, "android", "android",
+//                                "/", "412424123412341234_20130715120334_" + i + ".jpg", in);
+//                        System.out.println(flag);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }

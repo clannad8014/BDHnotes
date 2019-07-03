@@ -18,7 +18,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.service.voice.VoiceInteractionService;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -43,6 +47,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -67,7 +72,10 @@ public class AddActivity extends AppCompatActivity {
     String neirong; //初始内容
     String beforettt;//编辑后前一步的标题
     String beforeneirong;//编辑后前一步的内容
-    boolean isclose=false;
+    ArrayList<note_content> note_contents; //历史记录列表
+    HistoryAdapter historyAdapter;
+    ListView listView;
+
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -91,6 +99,8 @@ public class AddActivity extends AppCompatActivity {
     EditText title;             //标题
     View hrView;                //最下方菜单栏的那个横线
     View bottomMenu;            //最下方菜单栏
+    DrawerLayout drawerLayout;   //整个页面
+    NavigationView navigationView; //历史菜单页
 
 
     @SuppressLint("HandlerLeak")
@@ -99,11 +109,28 @@ public class AddActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
 
             switch (msg.what){
-                case 0x27:case 0x28:case 0x29:case 0x30:
+                case 0x27:case 0x28:case 0x29:case 0x30:case 0x31:
                     String s = (String) msg.obj;
                     System.out.println(s);
                     Toast.makeText(AddActivity.this, s, Toast.LENGTH_LONG).show();
                     break;
+                case 0x32:
+                    note_contents= (ArrayList<note_content>) msg.obj;
+                    //测试
+                   /* for (note_content n:note_contents){
+                        System.out.println(n.getBid()+"***"+n.getXhnum()+"***"+n.getXcontent()+"****"+n.getXtime()+"****"+n.getXid());
+                    }*/
+                    historyAdapter=new HistoryAdapter(AddActivity.this,R.layout.history_cell,note_contents);
+                    View view=navigationView.getHeaderView(0);
+                    listView=view.findViewById(R.id.lv_history);
+
+//                    View view=AddActivity.this.getLayoutInflater().inflate(R.layout.history_header, null);
+//                    listView=view.findViewById(R.id.lv_history);
+
+                  listView.setAdapter(historyAdapter);
+                    System.out.println("历史加载成功！！！！！！！");
+                   // Toast.makeText(AddActivity.this,"加载成功！！！！！！！", Toast.LENGTH_SHORT).show();
+
 
             }
 
@@ -114,9 +141,11 @@ public class AddActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_add);
+
         Bundle bundle = getIntent().getExtras();
         bid = bundle.getString("bid");
         ttt = bundle.getString("title");
@@ -142,6 +171,8 @@ public class AddActivity extends AppCompatActivity {
         title = findViewById(R.id.et_edit_title);
         hrView = findViewById(R.id.view_edit_1);
         bottomMenu = findViewById(R.id.rl_edit_bottom);
+        drawerLayout=findViewById(R.id.drawerlayout);
+        navigationView=findViewById(R.id.nv_history);
 
 
 
@@ -216,31 +247,21 @@ public class AddActivity extends AppCompatActivity {
 
         //endregion
 
-        //region toolbar的菜单的点击事件——即保存按钮的点击事件**************************************先不设置功能
-       /* toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if(item.getItemId() == R.id.menu_save){
-                    if(flag.getId() == -1){
-                        //这是新建的
-                        if(isChanged){
-                            addFlag();
-                            isChanged = false;
-                        }
+      //历史菜单点击 事件 执行右滑
+       toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+           @Override
+           public boolean onMenuItemClick(MenuItem menuItem) {
+               if(menuItem.getItemId()==R.id.menu_history){
+                   //***********************************测试
+                   //左滑打开
 
-                    }else{
-                        //这个flag是进行修改的
-                        if(isChanged){
-                            //只有当进行了修改了才更新数据库
-                            editFlag();
-                            isChanged = false;
-                        }
+                   drawerLayout.openDrawer(GravityCompat.END);
+                   //*******************
+               }
 
-                    }
-                }
-                return true;
-            }
-        });*/
+               return false;
+           }
+       });
         //endregion
 
         //region toolbar的返回键点击事件
@@ -292,6 +313,35 @@ public class AddActivity extends AppCompatActivity {
                 }
             }
 
+        });
+        //查看历史点击事件
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                System.out.println("77777777777777777779999999999");
+                if(menuItem.getItemId()==R.id.sel_history)
+                {
+
+                    Sqls sqls=new Sqls();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Message message = handler.obtainMessage();
+                            try {
+                                ArrayList<note_content> note_contents=sqls.selAllNoteContent(bid);
+                                    message.what = 0x32;
+                                    message.obj =note_contents ;
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                                message.what = 0x31;
+                                message.obj ="查询过程出错" ;
+                            }
+                            handler.sendMessage(message);
+                        }
+                    }).start();
+                }
+                return false;
+            }
         });
 
 
