@@ -100,10 +100,10 @@ public class AddActivity extends AppCompatActivity {
     EditText content;           //内容
     ScrollView scrollView;      //整个view
     EditText title;             //标题
-    View view;  //拿到右滑菜单
-    View bottomMenu;            //最下方菜单栏
     DrawerLayout drawerLayout;   //整个页面
+
     NavigationView navigationView; //历史菜单页
+    View view;  //拿到右滑菜单
     Button btn_history;//历史菜单的btn
     ListView listView;  //历史菜单的listview
 
@@ -121,13 +121,7 @@ public class AddActivity extends AppCompatActivity {
                     break;
                 case 0x32:
                     note_contents= (ArrayList<note_content>) msg.obj;
-                    //测试
-                   /* for (note_content n:note_contents){
-                        System.out.println(n.getBid()+"***"+n.getXhnum()+"***"+n.getXcontent()+"****"+n.getXtime()+"****"+n.getXid());
-                    }*/
                     historyAdapter=new HistoryAdapter(AddActivity.this,R.layout.history_cell,note_contents);
-
-
                   listView.setAdapter(historyAdapter);
                     setListViewHeightBasedOnChildren(listView);//显示多行
                     System.out.println("历史加载成功！！！！！！！");
@@ -171,7 +165,6 @@ public class AddActivity extends AppCompatActivity {
         content = findViewById(R.id.et_edit_content);
         scrollView = findViewById(R.id.sv_edit_view);
         title = findViewById(R.id.et_edit_title);
-        bottomMenu = findViewById(R.id.rl_edit_bottom);
         drawerLayout=findViewById(R.id.drawerlayout);
 
         navigationView=findViewById(R.id.nv_history);
@@ -373,6 +366,8 @@ public class AddActivity extends AppCompatActivity {
 
             }
         });
+
+        //某个历史的点击事件
 
 
 
