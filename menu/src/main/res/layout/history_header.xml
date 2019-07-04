@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:id="@+id/ll_history"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:background="#39FFEB3B"
+    >
+    <Button
+        android:id="@+id/btn_history"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="点击查看/刷新历史"
+        android:background="#65FFEB3B"/>
+
+    <ListView
+        android:id="@+id/lv_history"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:baselineAligned="false" />
+
+</LinearLayout>

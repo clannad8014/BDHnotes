@@ -4,27 +4,18 @@
     <group
         android:checkableBehavior="single">
         <item
-            android:id="@+id/favorite"
+            android:id="@+id/personalcenter"
             android:icon="@mipmap/email"
             android:checkable="true"
             android:title="    个人中心"/>
 
     </group>
     <item
-        android:id="@+id/wallet"
-        android:icon="@mipmap/email"
-
-        android:title="    所有记事本"/>
-    <item
-        android:id="@+id/photo"
+        android:id="@+id/onlineedit"
         android:icon="@mipmap/email"
         android:title="    在线协作编辑"/>
     <item
-        android:id="@+id/dress"
-        android:icon="@mipmap/email"
-        android:title="    编辑历史"/>
-    <item
-        android:id="@+id/file"
+        android:id="@+id/setting"
         android:icon="@mipmap/email"
         android:title="    设置"/>
 
