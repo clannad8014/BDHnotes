@@ -98,6 +98,8 @@ public class login extends AppCompatActivity {
             ActivityCompat.requestPermissions(login.this,PERMISSIONS_STORAGE,REQUEST_EXTERNAL_STORAGE);
         }
 ////////////
+
+
     }
     //region 当重新进入该activity后，需要重新初始化一下
     @Override
@@ -275,9 +277,6 @@ public class login extends AppCompatActivity {
             }
         });
     }
-
-
-
 
 }
 
