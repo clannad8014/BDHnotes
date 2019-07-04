@@ -25,6 +25,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     int delPosition=-1;            //用来删除的一个变量，因为内部类要用
+    int testnum=0;
 
 
     NoteAdapter noteAdapter;
@@ -103,13 +104,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         System.out.println("请等待几秒钟加载列表");
         Toast.makeText(MainActivity.this, "请等待几秒钟加载列表", Toast.LENGTH_SHORT).show();
         loadUserNoteList();
+
     }
 
-
-
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
 
     //加载listview
     void loadUserNoteList(){
