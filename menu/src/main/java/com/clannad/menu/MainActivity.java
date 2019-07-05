@@ -173,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         System.out.println("请等待几秒钟加载列表");
-        Toast.makeText(MainActivity.this, "请等待几秒钟加载列表", Toast.LENGTH_SHORT).show();
         loadUserNoteList();
 
         userinfo(); //用户信息初始化
@@ -346,8 +345,8 @@ public class MainActivity extends AppCompatActivity {
 
                             Sqls sqls=new Sqls();
 
-                            sqls.addOneNote(unl);
-                            sqls.startNoteContent(nc);
+                            sqls.addOneNote(unl,nc);
+                            //sqls.startNoteContent(nc);
                             message.what = 0x24;
                             message.obj ="新建笔记成功" ;
                         } catch (SQLException e) {
@@ -412,7 +411,6 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         System.out.println("请等待几秒钟加载列表");
-                        Toast.makeText(MainActivity.this, "请等待几秒钟加载列表", Toast.LENGTH_SHORT).show();
                         //确定删除
                             Sqls sqls=new Sqls();
                             new Thread(new Runnable() {
