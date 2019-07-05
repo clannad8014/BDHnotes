@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     TextView uinfo;
     NavigationView nav;
     ArrayList<show_list> show_lists;//用户笔记列表
-
+    ArrayList<user> user_lists;//用户笔记列表
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
@@ -84,27 +84,49 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
 
-                    //加载图片
-                case 0x06:
-                    String ss = (String) msg.obj;
-                    main_menu.setImageURI(Uri.fromFile(new File(ss)));
-                    Bitmap pic1= BitmapFactory.decodeFile(ss);
-
-                    person.setImageBitmap(pic1);
-                    System.out.println("==================================加载图片成功"+ss);
-                    // Toast.makeText(login.this, s7, Toast.LENGTH_LONG).show();
-                    break;
-
                     //数据库查询失败
                 case 0x07:
                     System.out.println("==================================用户信息初始化失败");
                     String sss = (String) msg.obj;
                     Toast.makeText(MainActivity.this,"用户信息初始化失败！！！！！！！ "+sss, Toast.LENGTH_SHORT).show();
-                    main_menu.setImageURI(Uri.fromFile(new File(sss)));
-                    Bitmap pic2= BitmapFactory.decodeFile(sss);
-                    person.setImageBitmap(pic2);
 
                     // Toast.makeText(login.this, s7, Toast.LENGTH_LONG).show();
+                    break;
+
+                case 0x09:
+                    //加载图片
+                    user_lists= (ArrayList<user>) msg.obj;
+                    String path="";
+                    String name="",info="";
+                    for(user U:user_lists){
+                        path=U.getUphoto2()+U.getUphoto1();
+                        name=U.getUname();
+                        info=U.getUinfo();
+                    }
+                        //获取用户名和个性签名
+                           uname.setText(name);
+                           uinfo.setText(info);
+
+                        System.out.println("============ -- "+path);
+                        File file=new File(path);
+                        System.out.println("============ ====--  "+file.exists());
+                        //判断文件是否存在
+                        if(file.exists()){
+                            Bitmap pic1= BitmapFactory.decodeFile(path);
+                            person.setImageBitmap(pic1);
+                        }else{
+                            System.out.println("==================================加载图片失败"+path);
+                            Toast.makeText(MainActivity.this,"图片加载失败！！！！！！！", Toast.LENGTH_SHORT).show();
+                        }
+
+
+//                    noteAdapter=new NoteAdapter(MainActivity.this,R.layout.flag,show_lists);
+//                    listView = findViewById(R.id.lv_flags);
+//                    listView.setAdapter(noteAdapter);
+
+                    System.out.println("user_lists 加载成功！！！！！！！");
+                    Toast.makeText(MainActivity.this,"加载成功！！！！！！！", Toast.LENGTH_SHORT).show();
+
                     break;
 
             }
@@ -254,36 +276,28 @@ public class MainActivity extends AppCompatActivity {
                     com.clannad.menu.FTP.File file=new com.clannad.menu.FTP.File();
                     if(user_lists !=null){
                        for(user U:user_lists){
-                           System.out.println("============ -- "+U.getUname());
-                           System.out.println("============ -- "+U.getUphoto2()+" ___ "+U.getUphoto1());
 
+                           System.out.println("============ -- "+U.getUphoto2()+"   "+U.getUphoto1());
 
                            File file1=new File(U.getUphoto2()+U.getUphoto1());
                            System.out.println("============ ====--  "+file1.exists());
-                            //判断文件是否存在
+                            //判断图片是否存在
                             if(!file1.exists()){
                                 System.out.println("============不存在  下载图片--  ");
                                 //如果不存在  下载图片
                                 Boolean flag=file.aboutTakePhotoDown(U.getUphoto1(),U.getUphoto2());
                                 if(flag){
                                     System.out.println("============下载图片成功--  ");
-                                    message.what = 0x06;
-                                    message.obj =U.getUphoto2()+U.getUphoto1();
                                 }
-
-                            }else{
-                                System.out.println("============ 存在  加载图片====--  ");
-                                message.what = 0x06;
-                                message.obj =U.getUphoto2()+U.getUphoto1();
 
                             }
 
                        }
 
-
-                      //  System.out.println("============ user_lists - "+user_lists.get(0)+"  "+user_lists.get(1));
                     }
 
+                    message.what = 0x09;
+                    message.obj =user_lists;
                 } catch (SQLException e) {
                     e.printStackTrace();
                     message.what = 0x07;

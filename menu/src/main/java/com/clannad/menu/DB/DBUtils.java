@@ -26,7 +26,7 @@ public class DBUtils {
             Class.forName(driver);// 动态加载类
             connection = DriverManager.getConnection(dburl+ dbname,
                     user, password);
-            System.out.println("连接成功");
+          //  System.out.println("连接成功");
 
         }catch (Exception e){
             e.printStackTrace();
