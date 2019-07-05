@@ -10,23 +10,13 @@
             android:title="    个人中心"/>
 
     </group>
-    <group>
-        <item
-            android:id="@+id/onlineedit"
-            android:icon="@mipmap/email"
-            android:title="    在线协作编辑"/>
-    </group>
-    <group>
-        <item
-            android:id="@+id/setting"
-            android:icon="@mipmap/email"
-            android:title="    设置"/>
-    </group>
-    <group>
-        <item
-            android:id="@+id/about"
-            android:icon="@mipmap/email"
-            android:title="    关于"/>
-    </group>
+    <item
+        android:id="@+id/onlineedit"
+        android:icon="@mipmap/email"
+        android:title="    在线协作编辑"/>
+    <item
+        android:id="@+id/setting"
+        android:icon="@mipmap/email"
+        android:title="    设置"/>
 
 </menu>
