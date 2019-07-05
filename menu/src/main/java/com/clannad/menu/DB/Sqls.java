@@ -11,22 +11,22 @@ import static com.clannad.menu.DB.DBUtils.getConn;
 public class Sqls {
 
     //查询某用户的所有笔记
-    public  ArrayList<user_note_list> sel_user_note_list(String uid) throws SQLException {
+    public  ArrayList<show_list> sel_user_note_list(String uid) throws SQLException {
         Connection conn = getConn();
-        ArrayList<user_note_list> lists=new ArrayList<>();
-        String sql= "select * from user_note_list where uid = ?";
+        ArrayList<show_list> lists=new ArrayList<>();
+        String sql= "SELECT * from (select n.title,c.bid,c.xcontent,n.ctime from note_content c,user_note_list n where c.bid=n.bid and n.uid=? ORDER BY c.bid desc ,c.xhnum desc)b group by b.bid";
         PreparedStatement psmt = conn.prepareStatement(sql);
         psmt.setString(1,uid);
         //执行SQL语句
         ResultSet rs = psmt.executeQuery();
-        user_note_list u;
+        show_list sl;
         while(rs.next()){
-            u = new user_note_list();
-            u.setUid(rs.getString("uid"));
-            u.setBid(rs.getString("bid"));
-            u.setTitle(rs.getString("title"));
-            u.setCtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("ctime")));
-            lists.add(u);
+            sl=new show_list();
+            sl.setBid(rs.getString("bid"));
+            sl.setTitle(rs.getString("title"));
+            sl.setA_content(rs.getString("xcontent"));
+            sl.setCtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("ctime")));
+            lists.add(sl);
         }
         rs.close();
         psmt.close();

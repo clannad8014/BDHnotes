@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case 0x22:
                     show_lists= (ArrayList<show_list>) msg.obj;
-
                     noteAdapter=new NoteAdapter(MainActivity.this,R.layout.flag,show_lists);
                     listView = findViewById(R.id.lv_flags);
                     listView.setAdapter(noteAdapter);
@@ -87,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
                     //加载图片
                 case 0x06:
                     String ss = (String) msg.obj;
+                    System.out.println("==================================加载图片中 "+ss);
                     main_menu.setImageURI(Uri.fromFile(new File(ss)));
                     Bitmap pic1= BitmapFactory.decodeFile(ss);
 
@@ -139,7 +139,9 @@ public class MainActivity extends AppCompatActivity {
         person.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                System.out.println("===================个人中心");
                 Intent intent = new Intent(MainActivity.this,Lmenu_user.class);
+                System.out.println("===================个人中心2");
                 startActivity(intent);
             }
         });
@@ -303,26 +305,11 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 Message message = handler.obtainMessage();
                 try {
-                    ArrayList<user_note_list> user_note_lists=sqls.sel_user_note_list(uid);
-                    if (user_note_lists !=null) {
-                        ArrayList<show_list> show_lists=new ArrayList<>();
-                        show_list sl=null;
-                        for(user_note_list unl:user_note_lists){
-                            sl=new show_list();
-                            sl.setBid(unl.getBid());
-                            sl.setTitle(unl.getTitle());
-                            //取最近一次作为显示内容
-                            String con=sqls.sel_New_content(unl.getBid()).getXcontent();
-                            if(con!=null)
-                            {sl.setA_content(con);}
-                            else
-                            {sl.setA_content("null");}
-                            sl.setCtime(unl.getCtime());
-                            show_lists.add(sl);
-                        }
+                    ArrayList<show_list> lists=sqls.sel_user_note_list(uid);
+                    if (lists !=null) {
 
                         message.what = 0x22;
-                        message.obj =show_lists ;
+                        message.obj =lists ;
                     }
                     else {
                         message.what = 0x21;

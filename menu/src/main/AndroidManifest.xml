@@ -18,6 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
         <activity android:name=".AddActivity"></activity>
+        <activity android:name=".Lmenu_user"></activity>
         <activity android:name=".MainActivity" />
         <activity android:name=".Login">
             <intent-filter>
