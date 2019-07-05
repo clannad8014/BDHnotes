@@ -81,8 +81,6 @@ public class MainActivity extends AppCompatActivity {
                     //长按删除一个笔记
                     longClickNote();
                     break;
-//
-
                     //加载图片
                 case 0x06:
                     String ss = (String) msg.obj;
