@@ -38,4 +38,8 @@ dependencies {
 
     implementation 'homhomlin.lib:sldinglayout:0.9.0'
     implementation files('libs\\mysql-connector-java-5.0.8-bin.jar')
+    implementation files('libs\\commons-net-3.0.1.jar')
+
+    implementation 'com.jakewharton:butterknife:8.5.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
 }
