@@ -3,6 +3,8 @@ package com.clannad.menu.models;
 public class show_list {
     String title;
     String a_content;
+    String bid;
+    String ctime;
 
     public String getBid() {
         return bid;
@@ -12,7 +14,7 @@ public class show_list {
         this.bid = bid;
     }
 
-    String bid;
+
 
     public String getTitle() {
         return title;
@@ -38,5 +40,5 @@ public class show_list {
         this.ctime = ctime;
     }
 
-    String ctime;
+
 }

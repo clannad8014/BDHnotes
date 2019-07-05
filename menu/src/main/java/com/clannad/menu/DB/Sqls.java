@@ -11,99 +11,68 @@ import static com.clannad.menu.DB.DBUtils.getConn;
 public class Sqls {
 
     //查询某用户的所有笔记
-    public  ArrayList<user_note_list> sel_user_note_list(String uid) throws SQLException {
+    public  ArrayList<show_list> sel_user_note_list(String uid) throws SQLException {
         Connection conn = getConn();
-        ArrayList<user_note_list> lists=new ArrayList<>();
-        String sql= "select * from user_note_list where uid = ?";
+        ArrayList<show_list> lists=new ArrayList<>();
+        String sql= "SELECT * from (select n.title,c.bid,c.xcontent,n.ctime from note_content c,user_note_list n where c.bid=n.bid and n.uid=? ORDER BY c.bid desc ,c.xhnum desc)b group by b.bid";
         PreparedStatement psmt = conn.prepareStatement(sql);
         psmt.setString(1,uid);
         //执行SQL语句
         ResultSet rs = psmt.executeQuery();
-        user_note_list u;
+        show_list sl;
         while(rs.next()){
-            u = new user_note_list();
-            u.setUid(rs.getString("uid"));
-            u.setBid(rs.getString("bid"));
-            u.setTitle(rs.getString("title"));
-            u.setCtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("ctime")));
-            lists.add(u);
+            sl=new show_list();
+            sl.setBid(rs.getString("bid"));
+            sl.setTitle(rs.getString("title"));
+            sl.setA_content(rs.getString("xcontent"));
+            sl.setCtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("ctime")));
+            lists.add(sl);
         }
         rs.close();
         psmt.close();
         return lists;
     }
 
-    //查询某笔记最新内容
-    public note_content sel_New_content(String bid) throws SQLException{
-        Connection conn = getConn();
-        note_content content=new note_content();
-        String sql= "select * from note_content where bid=? order by xhnum asc";
-        PreparedStatement psmt = conn.prepareStatement(sql);
-        psmt.setString(1,bid);
-        //执行SQL语句
-        ResultSet rs = psmt.executeQuery();
-        while(rs.next()){
-            content.setBid(rs.getString("bid"));
-            content.setXhnum(rs.getInt("xhnum"));
-            content.setXcontent(rs.getString("xcontent"));
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            content.setXtime(format.format( rs.getTimestamp("xtime")));
-            content.setXid(rs.getString("xid"));
-        }
-        rs.close();
-        psmt.close();
-        return content;
-    }
-
     //新建一个笔记
-    public void addOneNote(user_note_list unl)throws SQLException{
+    public void addOneNote(user_note_list unl,note_content nc)throws SQLException{
         //首先拿到数据库的连接
         Connection conn = getConn();
-        String sql= "insert into user_note_list"+
+        String sql1= "insert into user_note_list"+
                 "(uid,bid,title,ctime) "+
                 "values(?,?,?,?)";//参数用?表示，相当于占位符;
+        String sql2= "insert into note_content (bid,xhnum,xcontent,xtime,xid) values(?,0,?,?,?)";
 
         //预编译sql语句
-        PreparedStatement psmt = conn.prepareStatement(sql);
+        PreparedStatement psmt1 = conn.prepareStatement(sql1);
+        PreparedStatement psmt2 = conn.prepareStatement(sql2);
 
         //先对应SQL语句，给SQL语句传递参数
-        psmt.setString(1,unl.getUid());
-        psmt.setString(2,unl.getBid());
-        psmt.setString(3,unl.getTitle());
-        psmt.setString(4,unl.getCtime());
+        psmt1.setString(1,unl.getUid());
+        psmt1.setString(2,unl.getBid());
+        psmt1.setString(3,unl.getTitle());
+        psmt1.setString(4,unl.getCtime());
+
+        psmt2.setString(1,nc.getBid());
+        psmt2.setString(2,nc.getXcontent());
+        psmt2.setString(3,nc.getXtime());
+        psmt2.setString(4,nc.getXid());
         //执行SQL语句
-        psmt.execute();
-        psmt.close();
+        psmt1.execute();psmt2.execute();
+        psmt1.close();psmt2.close();
     }
-    //初始化笔记内容
-    public void startNoteContent(note_content nc)throws SQLException{
-        //首先拿到数据库的连接
-        Connection conn = getConn();
-        String sql= "insert into note_content (bid,xhnum,xcontent,xtime,xid) values(?,0,?,?,?)";//参数用?表示，相当于占位符;
-
-        //预编译sql语句
-        PreparedStatement psmt = conn.prepareStatement(sql);
-
-        //先对应SQL语句，给SQL语句传递参数
-        psmt.setString(1,nc.getBid());
-        psmt.setString(2,nc.getXcontent());
-        psmt.setString(3,nc.getXtime());
-        psmt.setString(4,nc.getXid());
-        //执行SQL语句
-        psmt.execute();
-        psmt.close();
-    }
-
 
     //删除某个笔记
     public void deleteOneNote(String bid) throws SQLException{
         Connection conn = getConn();
-        String sql="delete from user_note_list where bid = ?";
-        PreparedStatement psmt = conn.prepareStatement(sql);
-        psmt.setString(1,bid);
+        String sql1="delete from user_note_list where bid = ?";
+        String sql2="delete from note_content where bid = ?";
+        PreparedStatement psmt1 = conn.prepareStatement(sql1);
+        PreparedStatement psmt2 = conn.prepareStatement(sql2);
+        psmt1.setString(1,bid);
+        psmt2.setString(1,bid);
         //执行SQL语句
-        psmt.execute();
-        psmt.close();
+        psmt1.execute(); psmt2.execute();
+        psmt1.close();psmt2.close();
     }
 
     //更改笔记标题
