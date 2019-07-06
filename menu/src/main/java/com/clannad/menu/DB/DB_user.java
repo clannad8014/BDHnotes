@@ -19,6 +19,7 @@ public class DB_user {
     Statement stmt =null;
 
 
+
     //查询用户信息
     public static ArrayList<user> SearchUser(String uid) throws SQLException{
 
@@ -81,5 +82,66 @@ public class DB_user {
             test.add(b);
         }
         return test;
+    }
+
+
+    //修改昵称
+    public void updateUname(user U)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+        String sql="update user set uname = ? where uid = ? ";
+        //预编译sql语句
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        //先对应SQL语句，给SQL语句传递参数
+        psmt.setString(1,U.getUname());
+        psmt.setString(2,U.getUid());
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+
+    //修改个性签名
+    public void updateUinfo(user U)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+        String sql="update user set uinfo= ? where uid= ? ";
+        //预编译sql语句
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        //先对应SQL语句，给SQL语句传递参数
+        psmt.setString(1,U.getUinfo());
+        psmt.setString(2,U.getUid());
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+    //修改头像
+    public void updatePhoto(user U)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+        String sql="update user set uphoto1=?,uphoto2=? where uid = ? ";
+        //预编译sql语句
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        //先对应SQL语句，给SQL语句传递参数
+        psmt.setString(1,U.getUphoto1());
+        psmt.setString(2,U.getUphoto2());
+        psmt.setString(3,U.getUid());
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+
+    //修改邮箱
+    public void updateEmail(user U)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+        String sql="update user set email=? where uid =? ";
+        //预编译sql语句
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        //先对应SQL语句，给SQL语句传递参数
+        psmt.setString(1,U.getEmail());
+        psmt.setString(2,U.getUid());
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
     }
 }

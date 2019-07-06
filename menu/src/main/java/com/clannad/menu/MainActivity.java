@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     TextView uinfo;
     NavigationView nav;
     ArrayList<show_list> show_lists;//用户笔记列表
-    ArrayList<user> user_lists;//用户笔记列表
+    ArrayList<user> user_lists;//用户信息列表
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
@@ -72,9 +73,7 @@ public class MainActivity extends AppCompatActivity {
                     noteAdapter=new NoteAdapter(MainActivity.this,R.layout.flag,show_lists);
                     listView = findViewById(R.id.lv_flags);
                     listView.setAdapter(noteAdapter);
-
                     System.out.println("加载成功！！！！！！！");
-                    Toast.makeText(MainActivity.this,"加载成功！！！！！！！", Toast.LENGTH_SHORT).show();
                     //增加笔记
                     addNote();
                     //点击一个笔记进入
@@ -97,23 +96,20 @@ public class MainActivity extends AppCompatActivity {
                     //加载图片
                     user_lists= (ArrayList<user>) msg.obj;
                     String path="";
-                    String name="",info="";
                     for(user U:user_lists){
                         path=U.getUphoto2()+U.getUphoto1();
-                        name=U.getUname();
-                        info=U.getUinfo();
+                        uname.setText(U.getUname());
+                        uinfo.setText(U.getUinfo());
                     }
-                        //获取用户名和个性签名
-                           uname.setText(name);
-                           uinfo.setText(info);
+
 
                         System.out.println("============ -- "+path);
                         File file=new File(path);
-                        System.out.println("============ ====--  "+file.exists());
                         //判断文件是否存在
                         if(file.exists()){
                             Bitmap pic1= BitmapFactory.decodeFile(path);
                             person.setImageBitmap(pic1);
+                            System.out.println("===================图片加载成功！！！！！！！");
                         }else{
                             System.out.println("==================================加载图片失败"+path);
                             Toast.makeText(MainActivity.this,"图片加载失败！！！！！！！", Toast.LENGTH_SHORT).show();
@@ -123,10 +119,6 @@ public class MainActivity extends AppCompatActivity {
 //                    noteAdapter=new NoteAdapter(MainActivity.this,R.layout.flag,show_lists);
 //                    listView = findViewById(R.id.lv_flags);
 //                    listView.setAdapter(noteAdapter);
-
-                    System.out.println("user_lists 加载成功！！！！！！！");
-                    Toast.makeText(MainActivity.this,"加载成功！！！！！！！", Toast.LENGTH_SHORT).show();
-
                     break;
 
             }
@@ -193,7 +185,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         System.out.println("请等待几秒钟加载列表");
-        Toast.makeText(MainActivity.this, "请等待几秒钟加载列表", Toast.LENGTH_SHORT).show();
         loadUserNoteList();
 
         userinfo(); //用户信息初始化
@@ -223,6 +214,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
     void show_Lmenu(){
 
 
@@ -231,28 +223,36 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
-                //所有笔记
+                //设置
                 if(menuItem.getItemId()==R.id.setting)
                 {
                     System.out.println("读取图像中...");
                     uname.setText("读取图像中..");
                     Bitmap pic=BitmapFactory.decodeFile("/storage/emulated/0/BDH.notes/img13.jpg");
-                    if(pic!=null){
-                        System.out.println("============加载成功=======================");
-                        person.setImageBitmap(pic);
-                    }else{
-                        System.out.println("=============加载失败======================");
-                    }
+
 
                 }
                 //跳转个人中心
                 if(menuItem.getItemId()==R.id.personalcenter)
                 {
-                    uname.setText("先试试然后他");
-                    uinfo.setText("显示TextView");
-                    person.setImageURI(Uri.fromFile(new File("/storage/emulated/0/BDH.notes/img13.jpg")));
+
                     System.out.println("读取图像中..."+person+person.toString());
+
                     Intent intent = new Intent(MainActivity.this,Lmenu_user.class);
+
+//                    user_lists unl=new user_note_list(uid);
+                 Bundle bundle = new Bundle();
+                    for(user U:user_lists){
+                        bundle.putString("uid",uid);
+                        bundle.putString("uname",U.getUname());
+                        bundle.putString("uinfo",U.getUinfo());
+                        bundle.putString("uphoto1",U.getUphoto1());
+                        bundle.putString("uphoto2",U.getUphoto2());
+                        bundle.putString("email",U.getEmail());
+
+                    }
+                    intent.putExtra("user_list",bundle);
+
                     startActivity(intent);
 
                 }
@@ -277,10 +277,7 @@ public class MainActivity extends AppCompatActivity {
                     if(user_lists !=null){
                        for(user U:user_lists){
 
-                           System.out.println("============ -- "+U.getUphoto2()+"   "+U.getUphoto1());
-
                            File file1=new File(U.getUphoto2()+U.getUphoto1());
-                           System.out.println("============ ====--  "+file1.exists());
                             //判断图片是否存在
                             if(!file1.exists()){
                                 System.out.println("============不存在  下载图片--  ");
@@ -317,26 +314,11 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 Message message = handler.obtainMessage();
                 try {
-                    ArrayList<user_note_list> user_note_lists=sqls.sel_user_note_list(uid);
-                    if (user_note_lists !=null) {
-                        ArrayList<show_list> show_lists=new ArrayList<>();
-                        show_list sl=null;
-                        for(user_note_list unl:user_note_lists){
-                            sl=new show_list();
-                            sl.setBid(unl.getBid());
-                            sl.setTitle(unl.getTitle());
-                            //取最近一次作为显示内容
-                            String con=sqls.sel_New_content(unl.getBid()).getXcontent();
-                            if(con!=null)
-                            {sl.setA_content(con);}
-                            else
-                            {sl.setA_content("null");}
-                            sl.setCtime(unl.getCtime());
-                            show_lists.add(sl);
-                        }
+                    ArrayList<show_list> lists=sqls.sel_user_note_list(uid);
+                    if (lists !=null) {
 
                         message.what = 0x22;
-                        message.obj =show_lists ;
+                        message.obj =lists ;
                     }
                     else {
                         message.what = 0x21;
@@ -353,6 +335,8 @@ public class MainActivity extends AppCompatActivity {
         }).start();
 
     }
+
+
     //增加一个笔记
     void addNote(){
         addBtn.setOnClickListener(new View.OnClickListener() {
@@ -373,8 +357,8 @@ public class MainActivity extends AppCompatActivity {
 
                             Sqls sqls=new Sqls();
 
-                            sqls.addOneNote(unl);
-                            sqls.startNoteContent(nc);
+                            sqls.addOneNote(unl,nc);
+                            //sqls.startNoteContent(nc);
                             message.what = 0x24;
                             message.obj ="新建笔记成功" ;
                         } catch (SQLException e) {
@@ -439,7 +423,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         System.out.println("请等待几秒钟加载列表");
-                        Toast.makeText(MainActivity.this, "请等待几秒钟加载列表", Toast.LENGTH_SHORT).show();
+                       // Toast.makeText(MainActivity.this, "请等待几秒钟加载列表", Toast.LENGTH_SHORT).show();
                         //确定删除
                             Sqls sqls=new Sqls();
                             new Thread(new Runnable() {

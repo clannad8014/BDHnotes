@@ -65,7 +65,7 @@
             android:layout_marginLeft="22dp"
             android:layout_marginTop="14dp"
             android:layout_toRightOf="@+id/mine_avatar"
-            android:text="一笑奈何"
+            android:text="一世琉璃白"
             android:textSize="@dimen/text_size_large"
             android:textStyle="bold"/>
 
@@ -136,11 +136,11 @@
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
                 android:layout_alignParentLeft="true"
-                android:text="个人账号" />
+                android:text="个人账号:" />
             <TextView
                 android:id="@+id/account_content"
                 android:layout_centerVertical="true"
-                android:layout_width="wrap_content"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="7dp"
                 android:paddingRight="20dp"
@@ -159,12 +159,22 @@
             android:layout_height="50dp" >
 
             <TextView
+                android:id="@+id/match_uname"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:layout_alignParentLeft="true"
-                android:text="昵称" />
+                android:text="昵称:" />
+            <TextView
+                android:id="@+id/match_name"
+                android:layout_centerVertical="true"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="7dp"
+                android:paddingRight="20dp"
+                android:layout_toRightOf="@+id/match_uname"
+                android:text="clannad" />
 
             <ImageView
                 android:layout_width="15dp"
@@ -181,30 +191,7 @@
             android:layout_height="0.5dp"
             android:background="@color/devide_line" />
 
-        <RelativeLayout
-            android:id="@+id/rl_sex"
-            android:layout_width="match_parent"
-            android:layout_height="50dp" >
 
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="10dp"
-                android:layout_alignParentLeft="true"
-                android:text="性别" />
-
-            <ImageView
-                android:layout_width="15dp"
-                android:layout_height="15dp"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginRight="7dp"
-
-                android:scaleType="centerInside"
-                android:src="@drawable/arrow" />
-        </RelativeLayout>
 
         <View
             android:layout_width="match_parent"
@@ -217,15 +204,23 @@
             android:layout_height="50dp" >
 
 
-
             <TextView
+                android:id="@+id/uemail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:layout_alignParentLeft="true"
-                android:text="E-Mail" />
-
+                android:text="E-Mail:" />
+            <TextView
+                android:id="@+id/match_email"
+                android:layout_centerVertical="true"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="7dp"
+                android:paddingRight="20dp"
+                android:layout_toRightOf="@+id/uemail"
+                android:text="clannad@Gmail.com" />
             <ImageView
                 android:layout_width="15dp"
                 android:layout_height="15dp"

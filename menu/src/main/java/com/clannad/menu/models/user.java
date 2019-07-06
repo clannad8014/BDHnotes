@@ -1,5 +1,8 @@
 package com.clannad.menu.models;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class user {
     private String uid;
     private String pwd;
@@ -8,7 +11,7 @@ public class user {
     private String uphoto2;
     private String uname;
     private String uinfo;
-
+    private String email;
     public String getEmail() {
         return email;
     }
@@ -17,7 +20,7 @@ public class user {
         this.email = email;
     }
 
-    private String email;
+
 
     public String getUname() {
         return uname;
@@ -77,6 +80,9 @@ public class user {
     public void setPwd(String pwd) {
         this.pwd = pwd;
     }
+
+
+
 
 
 }

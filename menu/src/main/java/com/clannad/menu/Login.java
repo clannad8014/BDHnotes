@@ -29,19 +29,12 @@ public class Login extends AppCompatActivity {
         public void handleMessage(Message msg) {
 
             switch (msg.what){
-                case 0x11:
+                 case 0x12: case 0x13:
                     String s = (String) msg.obj;
                     //tv_data.setText(s);
                     Toast.makeText(Login.this, s, Toast.LENGTH_LONG).show();
                     break;
-                case 0x12:
-                    String ss = (String) msg.obj;
-                    Toast.makeText(Login.this, ss, Toast.LENGTH_LONG).show();
-                    break;
-                case 0x13:
-                    String sss = (String) msg.obj;
-                    Toast.makeText(Login.this, sss, Toast.LENGTH_LONG).show();
-                    break;
+
             }
 
         }
@@ -106,8 +99,7 @@ public class Login extends AppCompatActivity {
 
                                     intent.putExtras(bundle);
                                     startActivity(intent);
-                                    message.what = 0x11;
-                                    message.obj = "登录成功";
+
                                 }else {
                                     message.what = 0x12;
                                     message.obj = "密码输入错误！！！";
