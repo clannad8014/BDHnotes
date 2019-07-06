@@ -402,7 +402,6 @@ public void showText(String text){
 
             Bitmap pic1= BitmapFactory.decodeFile(photo2+photo1);
             imageView.setImageBitmap(pic1);
-            int bitmapHeight = pic1.getHeight();
             System.out.println(" ============= 尺寸1： "+getImageWidth());
            System.out.println(" ============= 尺寸2 ："+pic1.getHeight());
         //获得toast的布局
