@@ -387,7 +387,7 @@ public class Lmenu_user extends AppCompatActivity {
         return imageWidth;
     }
 public void showText(String text){
-            Toast toast=Toast.makeText(getApplicationContext(), text,Toast.LENGTH_SHORT);
+            Toast toast=Toast.makeText(getApplicationContext(), "  "+text,Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.CENTER, 0, 0);
 
             LinearLayout linearLayout = (LinearLayout) toast.getView();
