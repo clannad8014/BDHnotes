@@ -2,6 +2,8 @@ package com.clannad.menu;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,9 +21,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Layout;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -34,7 +41,7 @@ import com.clannad.menu.weight.CircleImageView;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
+import java.util.zip.Inflater;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -45,7 +52,9 @@ public class MainActivity extends AppCompatActivity {
     private NavigationView navigationView;
 
     NoteAdapter noteAdapter;
+    RoomAdapter roomAdapter;
     ListView listView;
+    ListView listView_room;
     String uid;//用户名
     ImageView addBtn;          //新建笔记的按钮
     ImageView main_menu;
@@ -55,6 +64,22 @@ public class MainActivity extends AppCompatActivity {
     NavigationView nav;
     ArrayList<show_list> show_lists;//用户笔记列表
     ArrayList<user> user_lists;//用户信息列表
+    ArrayList<Room> room_lists;//房间表
+
+    //在线编辑弹窗
+    private AlertDialog.Builder builder;
+    private AlertDialog alertDialog;
+    Context context ;
+    LayoutInflater inflater;
+    View layout ;
+    ListView myListView ;
+    Button btn_adds;
+    Button btn_joins;
+    Button btn_add_room;
+    Button btn_join_room;
+    int open=0;
+
+
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
@@ -62,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
 
             switch (msg.what){
-                case 0x20: case 0x21:case 0x23:case 0x24:case 0x25:case 0x26:
+                case 0x20: case 0x21:case 0x23:case 0x24:case 0x25:case 0x26:case 0x28:
                     String s = (String) msg.obj;
                     System.out.println(s);
                     Toast.makeText(MainActivity.this, s, Toast.LENGTH_LONG).show();
@@ -81,9 +106,14 @@ public class MainActivity extends AppCompatActivity {
                     //长按删除一个笔记
                     longClickNote();
                     break;
+                case 0x27:
+                    room_lists=(ArrayList<Room>)msg.obj;
+                    roomAdapter=new RoomAdapter(MainActivity.this,R.layout.room_cell,room_lists);
+                    myListView.setAdapter(roomAdapter);
+                    open=(open+1)%2;//防止多次点击
+                    goRoom();//列表的点击事件
+                    break;
 
-
-                    //数据库查询失败
                 case 0x07:
                     System.out.println("==================================用户信息初始化失败");
                     String sss = (String) msg.obj;
@@ -120,6 +150,20 @@ public class MainActivity extends AppCompatActivity {
 //                    listView = findViewById(R.id.lv_flags);
 //                    listView.setAdapter(noteAdapter);
                     break;
+                case 0x30:
+                    Room room = (Room)msg.obj;
+                    Intent intent = new Intent(MainActivity.this,OnlineEditActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("uid", uid);
+                    bundle.putInt("rid",room.getRid());
+                    bundle.putString("rtitle",room.getRtitle());
+                    bundle.putString("rtime",room.getRtime());
+                    bundle.putString("rboss",room.getRboss());
+                    //System.out.println(sl.getA_content()+"------------------");
+                    intent.putExtras(bundle);
+                    // intent.putExtra("sl", (Parcelable) sl);
+                    startActivity(intent);
+
 
             }
 
@@ -255,6 +299,13 @@ public class MainActivity extends AppCompatActivity {
 
                     startActivity(intent);
 
+                }
+//在线编辑
+                if(menuItem.getItemId()==R.id.onlineedit)
+                {
+                    onlineEdit();
+                    Log.i("button", "点击在线编辑");
+                    selAllJoinRoom();
                 }
                 return false;
             }
@@ -456,6 +507,271 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    //查询用户加入房间列表
+    void selAllJoinRoom(){
+        Sqls sqls=new Sqls();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = handler.obtainMessage();
+                try {
+                    ArrayList<Room> lists=sqls.selAllJoinRoom(uid);
+                    if (lists !=null) {
+
+                        message.what = 0x27;
+                        message.obj =lists ;
+                    }
+                    else {
+                        message.what = 0x28;
+                        message.obj ="该用户没有房间" ;
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    message.what = 0x20;
+                    message.obj ="查询过程出错" ;
+                }
+                handler.sendMessage(message);
+            }
+        }).start();
+
+    }
+    //查询用户创建的列表
+    void selAllAddRoom(){
+        Sqls sqls=new Sqls();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = handler.obtainMessage();
+                try {
+                    ArrayList<Room> lists=sqls.selAllAddRoom(uid);
+                    if (lists !=null) {
+
+                        message.what = 0x27;
+                        message.obj =lists ;
+                    }
+                    else {
+                        message.what = 0x28;
+                        message.obj ="该用户没有房间" ;
+                    }
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    message.what = 0x20;
+                    message.obj ="查询过程出错" ;
+                }
+                handler.sendMessage(message);
+            }
+        }).start();
+
+    }
+    void goRoom(){
+        myListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                Room room= room_lists.get(i);
+                Intent intent = new Intent(MainActivity.this,OnlineEditActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("uid", uid);
+                bundle.putInt("rid",room.getRid());
+                bundle.putString("rtitle",room.getRtitle());
+                bundle.putString("rtime",room.getRtime());
+                bundle.putString("rboss",room.getRboss());
+                //System.out.println(sl.getA_content()+"------------------");
+                intent.putExtras(bundle);
+                // intent.putExtra("sl", (Parcelable) sl);
+                startActivity(intent);
+
+            }
+        });
+    }
+
+
+    void onlineEdit(){
+        context = MainActivity.this;
+        inflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
+        layout = inflater.inflate(R.layout.room, null);
+
+        myListView = layout.findViewById(R.id.room_list);
+        btn_joins=layout.findViewById(R.id.btn_joins);
+        btn_adds=layout.findViewById(R.id.btn_adds);
+        btn_join_room=layout.findViewById(R.id.btn_joinroom);
+        btn_add_room=layout.findViewById(R.id.btn_addroom);
+
+        builder = new AlertDialog.Builder(context);
+        builder.setView(layout);
+        alertDialog = builder.create();
+        alertDialog.show();
+
+        View.OnClickListener clickListener=new View.OnClickListener(){
+            public void onClick(View v) {
+                //加入的
+                if(v.getId()==R.id.btn_joins && open==0){
+                    Log.i("btn", "joins");
+                    selAllJoinRoom();
+                }  //创建的
+                if(v.getId()==R.id.btn_adds && open==1){
+                    selAllAddRoom();
+                    Log.i("btn", "adds");
+                }
+                //加入
+                if(v.getId()==R.id.btn_joinroom){
+                    Log.i("btn", "joinroom");
+                   Context context1 = MainActivity.this;
+                   LayoutInflater inflater1 = (LayoutInflater) context1.getSystemService(LAYOUT_INFLATER_SERVICE);
+                   View layout1 = inflater1.inflate(R.layout.roomjoin, null);
+                   EditText et_rid=layout1.findViewById(R.id.et_rid);et_rid.setText("");
+                   EditText et_pwd=layout1.findViewById(R.id.et_pwd);et_pwd.setText("");
+
+                   AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle("输入房间号和密码").setIcon(android.R.drawable.ic_dialog_info).setView(layout1)
+                            .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    builder.setPositiveButton("确定",null);
+                    Dialog dialog=builder.create();
+                    dialog.show();
+                    ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            String rid1=et_rid.getText().toString();
+                            String pwd1=et_pwd.getText().toString();
+                            if(!rid1.equals("") && !pwd1.equals("")){
+                               // dialog.dismiss();
+                                Sqls sqls=new Sqls();
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Message message = handler.obtainMessage();
+                                        try {
+                                            Room room=sqls.selRoom(Integer.parseInt(rid1));
+                                            if (room.getRpwd() !=null && room.getRpwd().equals(pwd1)) {
+                                                Log.i("mess", "可以查询到");
+                                                //查询自己是否已经在房间了
+                                                RoomContent rc=new RoomContent();
+                                                rc.setRid(Integer.parseInt(rid1));
+                                                rc.setUid(uid);
+                                                try{
+                                                    sqls.addOneMember(rc);
+                                                    Log.i("测试","插入成功");
+                                                    message.what=0x30;
+                                                    message.obj=room;
+                                                }catch (SQLException e)
+                                                {
+                                                    Log.i("测试", "插入出错，已存在");
+                                                    message.what=0x30;
+                                                    message.obj=room;
+                                                }
+                                                dialog.dismiss();
+                                            }
+                                            else {
+                                                message.what = 0x28;
+                                                message.obj ="房间号或密码错误" ;
+                                            }
+
+                                        } catch (SQLException e) {
+                                            e.printStackTrace();
+                                            message.what = 0x20;
+                                            message.obj ="查询过程出错" ;
+                                        }
+                                        handler.sendMessage(message);
+                                    }
+                                }).start();
+
+                            }else {
+                                Toast.makeText(MainActivity.this,"输入不能为空",Toast.LENGTH_SHORT).show();
+                                System.out.println("输入不能为空");
+                        }
+
+                        }
+                    });
+
+
+                }
+                //创建
+                if(v.getId()==R.id.btn_addroom){
+                    Log.i("btn", "addroom");
+                    Context context2 = MainActivity.this;
+                    LayoutInflater inflater2 = (LayoutInflater) context2.getSystemService(LAYOUT_INFLATER_SERVICE);
+                    View layout2 = inflater2.inflate(R.layout.roomadd, null);
+                    EditText et_name=layout2.findViewById(R.id.room_name);et_name.setText("");
+                    EditText et_pwd=layout2.findViewById(R.id.room_pwd);et_pwd.setText("");
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle("输入房间名和密码").setIcon(android.R.drawable.ic_dialog_info).setView(layout2)
+                            .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    builder.setPositiveButton("确定",null);
+                    Dialog dialog=builder.create();
+                    dialog.show();
+                    ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            String name2=et_name.getText().toString();
+                            String pwd2=et_pwd.getText().toString();
+                            if(!name2.equals("") && !pwd2.equals("")){
+                                // dialog.dismiss();
+                                Sqls sqls=new Sqls();
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Message message = handler.obtainMessage();
+                                        try {
+                                            Room room=new Room();
+                                            room.setRtitle(name2);
+                                            room.setRpwd(pwd2);
+                                            room.setRboss(uid);
+                                            sqls.addOneRoom(room);
+                                            room=sqls.selLastRoom(uid);
+
+                                            RoomContent rc=new RoomContent();
+                                            rc.setRid(room.getRid());
+                                            rc.setUid(room.getRboss());
+                                            sqls.addOneMember(rc);
+
+                                            message.what=0x30;
+                                            message.obj=room;
+
+                                        } catch (SQLException e) {
+                                            e.printStackTrace();
+                                            message.what = 0x20;
+                                            message.obj ="查询过程出错" ;
+                                        }
+                                        handler.sendMessage(message);
+                                    }
+                                }).start();
+
+                            }else {
+                                Toast.makeText(MainActivity.this,"输入不能为空",Toast.LENGTH_SHORT).show();
+                                System.out.println("输入不能为空");
+                            }
+
+                        }
+                    });
+
+
+
+
+
+                }
+
+
+            }
+        };
+        btn_adds.setOnClickListener(clickListener);
+        btn_add_room.setOnClickListener(clickListener);
+        btn_joins.setOnClickListener(clickListener);
+        btn_join_room.setOnClickListener(clickListener);
     }
 
 }

@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
+
 import com.clannad.menu.models.*;
 import static com.clannad.menu.DB.DBUtils.getConn;
 public class Sqls {
@@ -171,6 +173,234 @@ public class Sqls {
         psmt.close();
         return n;
     }
+
+    //查询自己加入的房间列表
+    public  ArrayList<Room> selAllJoinRoom(String uid) throws SQLException {
+        Connection conn = getConn();
+        String sql= "select * FROM room where rid in (select rid from room_content where uid=?) and rboss !=?";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setString(1,uid);
+        psmt.setString(2,uid);
+        //执行SQL语句
+        ResultSet rs = psmt.executeQuery();
+        ArrayList<Room> arrayList=new ArrayList<>();
+        Room room =null;
+        while(rs.next()){
+            room=new Room();
+            room.setRid(rs.getInt("rid"));
+            room.setRtitle(rs.getString("rtitle"));
+            room.setRtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("rtime")));
+            room.setRboss(rs.getString("rboss"));
+            arrayList.add(room);
+        }
+        rs.close();
+        psmt.close();
+        return arrayList;
+    }
+
+    //查询自己创建的房间列表
+    public  ArrayList<Room> selAllAddRoom(String uid) throws SQLException {
+        Connection conn = getConn();
+        String sql= "select * FROM room where rboss =?";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setString(1,uid);
+        //执行SQL语句
+        ResultSet rs = psmt.executeQuery();
+        ArrayList<Room> arrayList=new ArrayList<>();
+        Room room =null;
+        while(rs.next()){
+            room=new Room();
+            room.setRid(rs.getInt("rid"));
+            room.setRtitle(rs.getString("rtitle"));
+            room.setRtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("rtime")));
+            room.setRboss(rs.getString("rboss"));
+            arrayList.add(room);
+        }
+        rs.close();
+        psmt.close();
+        return arrayList;
+    }
+
+    //添加一条记录
+    public void addOneRecord(RoomContent rc)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+        String sql= "insert into room_content set rid=?,uid=?,xcontent=?,xnum=(SELECT a.xnum+1 from(select xnum from room_content where rid=? and uid=? ORDER BY xnum desc LIMIT 1)a),xtime=?";//参数用?表示，相当于占位符;
+        //预编译sql语句
+        PreparedStatement psmt = conn.prepareStatement(sql);
+
+        //先对应SQL语句，给SQL语句传递参数
+        psmt.setInt(1,rc.getRid());
+        psmt.setString(2,rc.getUid());
+        psmt.setString(3,rc.getXcontent());
+        psmt.setInt(4,rc.getRid());
+        psmt.setString(5,rc.getUid());
+        psmt.setString(6,rc.getXtime());
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+
+    //查询是否有该房间
+    public Room selRoom(int rid) throws SQLException {
+        Connection conn = getConn();
+        ArrayList<Room> lists=new ArrayList<>();
+        String sql= "select * from room where rid=?";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setInt(1, rid);
+        //执行SQL语句
+        ResultSet rs = psmt.executeQuery();
+        Room room=new Room();
+        while(rs.next()){
+            room.setRid(rs.getInt("rid"));
+            room.setRtitle(rs.getString("rtitle"));
+            room.setRtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("rtime")));
+            room.setRpwd(rs.getString("rpwd"));
+            room.setRboss(rs.getString("rboss"));
+        }
+        rs.close();
+        psmt.close();
+        return room;
+    }
+    //查询是否已经在该房间
+    public void addOneMember(RoomContent roomContent)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+        String sql= "insert into room_content set rid=?,uid=?,xcontent='',xnum=0,xtime=?";
+
+        //预编译sql语句
+        PreparedStatement psmt = conn.prepareStatement(sql);
+
+        //先对应SQL语句，给SQL语句传递参数
+        psmt.setInt(1,roomContent.getRid());
+        psmt.setString(2,roomContent.getUid());
+        psmt.setString(3,roomContent.getXtime());
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+
+    //查询房间所有内容
+    public  ArrayList<RoomContent> selAllRoomContent(int rid) throws SQLException {
+        Connection conn = getConn();
+        String sql= "select * FROM room_content where rid =? and xcontent !='' and xnum !=0 order by xtime";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setInt(1,rid);
+        //执行SQL语句
+        ResultSet rs = psmt.executeQuery();
+        ArrayList<RoomContent> arrayList=new ArrayList<>();
+        RoomContent rc =null;
+        while(rs.next()){
+            rc=new RoomContent();
+            rc.setRid(rs.getInt("rid"));
+            rc.setUid(rs.getString("uid"));
+            rc.setXcontent(rs.getString("xcontent"));
+            rc.setXnum(rs.getInt("xnum"));
+            rc.setXtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("xtime")));
+            arrayList.add(rc);
+        }
+        rs.close();
+        psmt.close();
+        return arrayList;
+    }
+
+    //新建房间
+    public void addOneRoom(Room ro)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+        String sql1= "insert into room set rtitle=?,rtime=?,rid=(SELECT a.rid+1 from(select rid from room  ORDER BY rid desc LIMIT 1)a),rpwd=?,rboss=?";//参数用?表示，相当于占位符;
+        //预编译sql语句
+        PreparedStatement psmt1 = conn.prepareStatement(sql1);
+
+        //先对应SQL语句，给SQL语句传递参数
+        psmt1.setString(1,ro.getRtitle());
+        psmt1.setString(2,ro.getRtime());
+        psmt1.setString(3,ro.getRpwd());
+        psmt1.setString(4,ro.getRboss());
+
+        //执行SQL语句
+        psmt1.execute();
+        psmt1.close();
+    }
+    //查询房间信息
+    public Room selLastRoom(String rboss) throws SQLException {
+        Connection conn = getConn();
+        String sql= "select * from room where rboss=?";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setString(1, rboss);
+        //执行SQL语句
+        ResultSet rs = psmt.executeQuery();
+        Room room=new Room();
+        while(rs.next()){
+            room.setRid(rs.getInt("rid"));
+            room.setRtitle(rs.getString("rtitle"));
+            room.setRtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("rtime")));
+            room.setRpwd(rs.getString("rpwd"));
+            room.setRboss(rs.getString("rboss"));
+        }
+        rs.close();
+        psmt.close();
+        return room;
+    }
+
+    //查询房间里的某个人的历史版本
+    public ArrayList<RoomContent> selOneMemberRoomContent(RoomContent rc) throws SQLException {
+        Connection conn = getConn();
+        ArrayList<RoomContent> roomContents=new ArrayList<>();
+        String sql= "select * from room_content where rid=? and uid=? and xnum !=0 order by xnum desc";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setInt(1,rc.getRid());
+        psmt.setString(2, rc.getUid());
+        //执行SQL语句
+        ResultSet rs = psmt.executeQuery();
+        RoomContent roomContent=null;
+        while(rs.next()){
+            roomContent=new RoomContent();
+            roomContent.setRid(rs.getInt("rid"));
+            roomContent.setUid(rs.getString("uid"));
+            roomContent.setXcontent(rs.getString("xcontent"));
+            roomContent.setXnum(rs.getInt("xnum"));
+            roomContent.setXtime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("xtime")));
+            roomContents.add(roomContent);
+        }
+        rs.close();
+        psmt.close();
+        return roomContents;
+    }
+    //修改某条在线历史
+    public void updateOneOnline(RoomContent rc)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+        String sql="update room_content set xcontent=? where rid=? and uid=? and xnum=? ";
+        //预编译sql语句
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        //先对应SQL语句，给SQL语句传递参数
+        psmt.setString(1,rc.getXcontent());
+        psmt.setInt(2,rc.getRid());
+        psmt.setString(3,rc.getUid());
+        psmt.setInt(4,rc.getXnum());
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+
+
+    //删除某条在线历史
+    public void deleteOneOnline(RoomContent rc) throws SQLException{
+        Connection conn = getConn();
+        String sql="delete from room_content where rid=? and uid=? and xnum=?";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setInt(1,rc.getRid());
+        psmt.setString(2,rc.getUid());
+        psmt.setInt(3,rc.getXnum());
+        //执行SQL语句
+        psmt.execute();
+        psmt.close();
+    }
+
+
+
+
 
 
 
