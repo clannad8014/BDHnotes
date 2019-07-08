@@ -2,51 +2,40 @@ package com.clannad.menu;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.Uri;
-import android.nfc.tech.NfcV;
+import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
-import android.service.voice.VoiceInteractionService;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.Layout;
-import android.text.Selection;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.TextWatcher;
 import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -60,16 +49,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.clannad.menu.DB.Sqls;
+import com.clannad.menu.FTP.FileUtill;
+import com.clannad.menu.FTP.NetWorkUtil;
+import com.clannad.menu.models.note_content;
+import com.clannad.menu.models.user_note_list;
+import com.clannad.menu.weight.CircleImageView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.clannad.menu.models.*;
 
 public class AddActivity extends AppCompatActivity {
     int delPosition=-1;            //用来删除的一个变量，因为内部类要用
@@ -102,6 +97,7 @@ public class AddActivity extends AppCompatActivity {
     //控件申明
     Toolbar toolbar;            //ToolBar
     ImageView pic;              //插入图片的imageView
+    ImageView fresh;
     EditText content;           //内容
     ScrollView scrollView;      //整个view
     EditText title;             //标题
@@ -124,6 +120,19 @@ public class AddActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
 
             switch (msg.what){
+                case 0x22:case 0x23:
+                    //上传图片
+                    String ss = (String) msg.obj;
+                    System.out.println(ss);
+                    f.deletePhotoWithPath("/storage/emulated/0/BDH.notes/upload");
+                    Toast.makeText(AddActivity.this, ss, Toast.LENGTH_LONG).show();
+                    break;
+                case 0x25:
+                    //String con =msg;
+                    System.out.println("=================加载中...........");
+                    content.setText((CharSequence) msg.obj);
+                    System.out.println("=================加载成功...........");
+                    break;
                 case 0x27:case 0x28:case 0x29:case 0x30:case 0x31: case 0x33: case 0x34:
                     String s = (String) msg.obj;
                     System.out.println(s);
@@ -176,6 +185,7 @@ public class AddActivity extends AppCompatActivity {
         //region 绑定控件
         toolbar = findViewById(R.id.toolbar_edit);
         pic = findViewById(R.id.iv_edit_pic);
+        fresh=findViewById(R.id.iv_edit_fresh);
         content = findViewById(R.id.et_edit_content);
         scrollView = findViewById(R.id.sv_edit_view);
         title = findViewById(R.id.et_edit_title);
@@ -223,6 +233,17 @@ public class AddActivity extends AppCompatActivity {
 
         //endregion
 
+        //region 刷新图片
+        fresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //刷新图片
+                //callGallery();
+                System.out.println(" 刷新图片");
+                initContent();
+
+            }
+        });
         //region 整个Scrollview的点击事件
 
         scrollView.setOnClickListener(new View.OnClickListener() {
@@ -443,11 +464,98 @@ public class AddActivity extends AppCompatActivity {
     }
     //endregion
 
+    //************************
+ /*
+     * 重命名文件
+     *
+     * oldPath 原来的文件地址
+     *  newPath 新的文件地址
+     */
+    public static void renameFile(String oldPath, String newPath) {
+        File oleFile = new File(oldPath);
+        File newFile = new File(newPath);
+        //执行重命名
+        oleFile.renameTo(newFile);
+    }
+
+
+    /**
+     * 复制单个文件
+     *
+     * @param oldPath String  原文件路径  如：c:/fqf.txt
+     * @param newPath String  复制后路径  如：f:/fqf.txt
+     * @return boolean
+     */
+    public void copyFile(String oldPath, String newPath) {
+        try {
+//           int  bytesum  =  0;
+            int byteread = 0;
+            File oldfile = new File(oldPath);
+            if (oldfile.exists()) {  //文件存在时
+                InputStream inStream = new FileInputStream(oldPath);  //读入原文件
+                FileOutputStream fs = new FileOutputStream(newPath);
+                byte[] buffer = new byte[1444];
+
+                while ((byteread = inStream.read(buffer)) != -1) {
+//                   bytesum  +=  byteread;  //字节数  文件大小
+//                   System.out.println(bytesum);
+                    fs.write(buffer, 0, byteread);
+                }
+                System.out.println("复制单个文件操作1111");
+                inStream.close();
+            }
+        } catch (Exception e) {
+            System.out.println("复制单个文件操作出错"+e);
+            e.printStackTrace();
+
+        }
+
+    }
+    FileUtill f=new FileUtill();
+    //上传图片
+    public void upload(String photoname){   ///storage/emulated/0/BDH.notes/upload/
+        File filePhoto = new File(Environment.getExternalStorageDirectory(),"BDH.notes/upload");
+        File[] photoAllfiles = filePhoto.listFiles();
+        System.out.println("文件已存在！"+photoAllfiles);
+        if (photoAllfiles!=null) {
+            if (photoAllfiles.length == 0) {
+                Toast.makeText(AddActivity.this, "没有图片要上传", Toast.LENGTH_SHORT).show();
+            } else {
+                for (final File photoFile : photoAllfiles) {
+                    if (NetWorkUtil.isNetworkAvailable(AddActivity.this)) {
+
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                Message message = handler.obtainMessage();
+
+                                boolean up_flag= f.aboutTakePhotoUp(photoFile);
+                                if(up_flag){
+
+                                    System.out.println("============上传图片成功--  "+photoFile.toString());
+                                    message.what = 0x22;
+                                    message.obj ="上传图片成功" ;
+
+                                }else{
+                                    message.what = 0x23;
+                                    message.obj ="上传图片失败" ;
+                                }
+                                handler.sendMessage(message);
+                            }
+                        }.start();
+                    } else {
+                        Toast.makeText(AddActivity.this, "对不起，没有网络！", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }else{
+            Toast.makeText(AddActivity.this, "没有图片要上传！", Toast.LENGTH_SHORT).show();
+        }
+    }
+    //*************************
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //参考网址：http://blog.csdn.net/abc__d/article/details/51790806
-
-        Bitmap bm = null;
+     Bitmap bm = null;
         // 外界的程序访问ContentProvider所提供数据 可以通过ContentResolver接口
         ContentResolver resolver = getContentResolver();
         if(requestCode == IMAGE_CODE){
@@ -464,8 +572,23 @@ public class AddActivity extends AppCompatActivity {
                 cursor.moveToFirst();
                 // 最后根据索引值获取图片路径
                 String path = cursor.getString(column_index);
-                //Log.e("insertIMG", "onActivityResult: ");
-                insertImg(path);
+                String b = path.substring(path.lastIndexOf("/") + 1, path.length());
+                //将目标图片放入目标目录
+                SimpleDateFormat formatter = new SimpleDateFormat("HHmmss");
+                Date curDate = new Date(System.currentTimeMillis());//获取当前时间
+               String path_name ="/storage/emulated/0/BDH.notes/content/"+xid+"_"+ttt+formatter.format(curDate)+".jpg";
+                copyFile(path,path_name);
+                File file = new File(Environment.getExternalStorageDirectory(), "BDH.notes/upload/");
+                if (!file.mkdirs()) {
+                    System.out.println("========================文件创建失败"+file.mkdirs());
+                }
+                copyFile(path_name,"/storage/emulated/0/BDH.notes/upload/"+xid+"_"+ttt+formatter.format(curDate)+".jpg");
+
+                //上传下载图片
+                upload(b);
+
+                //显示图片
+                insertImg(path_name);
             }catch (Exception e){
                 e.printStackTrace();
                 Toast.makeText(AddActivity.this,"图片插入失败",Toast.LENGTH_SHORT).show();
@@ -476,7 +599,10 @@ public class AddActivity extends AppCompatActivity {
     //region 插入图片
     private void insertImg(String path){
         //Log.e("插入图片", "insertImg:" + path);
+        Message message = handler.obtainMessage();
         String tagPath = "<img src=\""+path+"\"/>";//为图片路径加上<img>标签
+        String photo_name=path.substring(path.lastIndexOf("/") + 1, path.length());
+        System.out.println("显示图片成功==="+photo_name);
         Bitmap bitmap = BitmapFactory.decodeFile(path);
         if(bitmap != null){
             SpannableString ss = getBitmapMime(path, tagPath);
@@ -484,10 +610,12 @@ public class AddActivity extends AppCompatActivity {
             content.append("\n");
             //Log.e("YYPT_Insert", content.getText().toString());
 
+
         }else{
             //Log.d("YYPT_Insert", "tagPath: "+tagPath);
             Toast.makeText(AddActivity.this,"插入失败，无读写存储权限，请到权限中心开启",Toast.LENGTH_LONG).show();
         }
+        //handler.sendMessage(message);
     }
     //endregion
 
@@ -546,37 +674,81 @@ public class AddActivity extends AppCompatActivity {
     //  https://segmentfault.com/q/1010000004268968
     //  http://www.jb51.net/article/102683.htm
     private void initContent(){
-        String input =neirong;
-        Pattern p = Pattern.compile("\\<img src=\".*?\"\\/>");
-        Matcher m = p.matcher(input);
-        SpannableString spannable = new SpannableString(input);
-        while(m.find()){
-            //Log.d("YYPT_RGX", m.group());
-            //这里s保存的是整个式子，即<img src="xxx"/>，start和end保存的是下标
-            String s = m.group();
-            int start = m.start();
-            int end = m.end();
-            //path是去掉<img src=""/>的中间的图片路径
-            String path = s.replaceAll("\\<img src=\"|\"\\/>","").trim();
-            //Log.d("YYPT_AFTER", path);
 
-            //利用spannableString和ImageSpan来替换掉这些图片
-            int width = ScreenUtils.getScreenWidth(AddActivity.this);
-            int height = ScreenUtils.getScreenHeight(AddActivity.this);
+        // LoadingDialog.getInstance(AddActivity.this).show();
+        System.out.println("222=======");
+        showText("加载中...");
+       // LoadingDialog.getInstance(AddActivity.this).dismiss();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    String input =neirong;
+                    Pattern p = Pattern.compile("\\<img src=\".*?\"\\/>");
+                    Matcher m = p.matcher(input);
+                    SpannableString spannable = new SpannableString(input);
+                    Message message = handler.obtainMessage();
 
-            try {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                Bitmap bitmap = BitmapFactory.decodeFile(path, options);
-                bitmap = ImageUtils.zoomImage(bitmap,(width-32)*0.8,bitmap.getHeight()/(bitmap.getWidth()/((width-32)*0.8)));
-                ImageSpan imageSpan = new ImageSpan(this, bitmap);
-                spannable.setSpan(imageSpan, start, end, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-        content.setText(spannable);
-        //content.append("\n");
-        //Log.d("YYPT_RGX_SUCCESS",content.getText().toString());
+                    while(m.find()){
+                        //Log.d("YYPT_RGX", m.group());
+                        //这里s保存的是整个式子，即<img src="xxx"/>，start和end保存的是下标
+                        String s = m.group();
+                        int start = m.start();
+                        int end = m.end();
+
+                        //path是去掉<img src=""/>的中间的图片路径
+                        String path = s.replaceAll("\\<img src=\"|\"\\/>","").trim();
+                        String b = path.substring(path.lastIndexOf("/") + 1, path.length());
+     //--------------------------------------------------
+
+
+                    File file1=new File(path);
+                    //判断图片是否存在
+                    if(!file1.exists()){
+                        System.out.println("============不存在  下载图片--  ");
+                        //如果不存在  下载图片
+                        Boolean flag=f.aboutTakePhotoDown(b,"/storage/emulated/0/BDH.notes/content/");
+                        if(flag){
+                            System.out.println("============下载图片成功--  ");
+                        }else{
+                            System.out.println("============下载图片失败--  ");
+                        }
+
+                    }
+                  //  handler.sendMessage(message);
+  //--------------------------------------------------
+
+                        System.out.println("------------------加载path："+path);
+                        System.out.println("------------------加载name:："+b);
+                        //Log.d("YYPT_AFTER", path);
+
+                        //利用spannableString和ImageSpan来替换掉这些图片
+                        int width = ScreenUtils.getScreenWidth(AddActivity.this);
+                        int height = ScreenUtils.getScreenHeight(AddActivity.this);
+
+                        try {
+                            BitmapFactory.Options options = new BitmapFactory.Options();
+                            Bitmap bitmap = BitmapFactory.decodeFile(path, options);
+                            bitmap = ImageUtils.zoomImage(bitmap,(width-32)*0.8,bitmap.getHeight()/(bitmap.getWidth()/((width-32)*0.8)));
+                            ImageSpan imageSpan = new ImageSpan(AddActivity.this, bitmap);
+                            spannable.setSpan(imageSpan, start, end, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                    //content.setText(spannable);
+
+                    message.what = 0x25;
+                    message.obj=spannable;
+                    System.out.println("=================加载中0...........");
+
+                    handler.sendMessage(message);
+                    //content.append("\n");
+                    //Log.d("YYPT_RGX_SUCCESS",content.getText().toString());
+                }
+
+
+            }).start();
+
     }
     //endregion
 
@@ -665,7 +837,31 @@ public class AddActivity extends AppCompatActivity {
 
     }
 
+    public void showText(String text){
+        Toast toast=Toast.makeText(getApplicationContext(), "  "+text,Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER, 0, 0);
 
+        LinearLayout linearLayout = (LinearLayout) toast.getView();
+        TextView messageTextView = (TextView) linearLayout.getChildAt(0);
+        messageTextView.setTextSize(messageTextView.getTextSize()/2);
+        //创建图片视图对象
+        CircleImageView imageView= new CircleImageView(getApplicationContext());
+        //设置图片
+        // imageView.setImageResource(R.drawable.miku1);
+///storage/emulated/0/BDH.notes/
+        Bitmap pic1= BitmapFactory.decodeFile("storage/emulated/0/BDH.notes/miku.jpg");
+        imageView.setImageBitmap(pic1);
+
+        //获得toast的布局
+        LinearLayout toastView = (LinearLayout) toast.getView();
+
+        //设置此布局为横向的
+        //toastView.setOrientation(LinearLayout.HORIZONTAL);
+        toastView.setOrientation(LinearLayout.VERTICAL);
+        //将ImageView在加入到此布局中的第一个位置
+        toastView.addView(imageView, 0);
+        toast.show();
+    }
 
     //解决listview只显示一条数据的bug
     public void setListViewHeightBasedOnChildren(ListView listView) {

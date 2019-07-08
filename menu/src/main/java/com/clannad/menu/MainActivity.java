@@ -7,10 +7,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -19,15 +17,18 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.clannad.menu.DB.*;
+import com.clannad.menu.FTP.FileUtill;
 import com.clannad.menu.models.*;
 import com.clannad.menu.weight.CircleImageView;
 
@@ -102,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
                         uinfo.setText(U.getUinfo());
                     }
 
-
                         System.out.println("============ -- "+path);
                         File file=new File(path);
                         //判断文件是否存在
@@ -115,10 +115,6 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this,"图片加载失败！！！！！！！", Toast.LENGTH_SHORT).show();
                         }
 
-
-//                    noteAdapter=new NoteAdapter(MainActivity.this,R.layout.flag,show_lists);
-//                    listView = findViewById(R.id.lv_flags);
-//                    listView.setAdapter(noteAdapter);
                     break;
 
             }
@@ -153,8 +149,7 @@ public class MainActivity extends AppCompatActivity {
         person.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this,Lmenu_user.class);
-                startActivity(intent);
+                user_info();
             }
         });
         uname=view.findViewById(R.id.uname);
@@ -190,8 +185,7 @@ public class MainActivity extends AppCompatActivity {
         userinfo(); //用户信息初始化
         show();  //左滑界面弹出
         show_Lmenu();
-//        show();
-//        show_Lmenu();
+
     }
 
     @Override
@@ -202,8 +196,6 @@ public class MainActivity extends AppCompatActivity {
     //点击显示左滑界面
     void show(){
 
-//    Bitmap pic=BitmapFactory.decodeFile("/storage/emulated/0/BDH.notes/img181.jpg");
-//    person.setImageBitmap(pic);
         main_menu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -228,39 +220,53 @@ public class MainActivity extends AppCompatActivity {
                 {
                     System.out.println("读取图像中...");
                     uname.setText("读取图像中..");
-                    Bitmap pic=BitmapFactory.decodeFile("/storage/emulated/0/BDH.notes/img13.jpg");
-
-
                 }
                 //跳转个人中心
                 if(menuItem.getItemId()==R.id.personalcenter)
                 {
-
-                    System.out.println("读取图像中..."+person+person.toString());
-
-                    Intent intent = new Intent(MainActivity.this,Lmenu_user.class);
-
-//                    user_lists unl=new user_note_list(uid);
-                 Bundle bundle = new Bundle();
-                    for(user U:user_lists){
-                        bundle.putString("uid",uid);
-                        bundle.putString("uname",U.getUname());
-                        bundle.putString("uinfo",U.getUinfo());
-                        bundle.putString("uphoto1",U.getUphoto1());
-                        bundle.putString("uphoto2",U.getUphoto2());
-                        bundle.putString("email",U.getEmail());
-
-                    }
-                    intent.putExtra("user_list",bundle);
-
+                    user_info();
+                }
+                //在线协作编辑
+                if(menuItem.getItemId()==R.id.onlineedit){
+                    showText("敬请期待...");
+                }
+                //分享应用
+                if(menuItem.getItemId()==R.id.nav_share){
+                    showText("敬请期待...");
+                }
+                //关于我们
+                if(menuItem.getItemId()==R.id.nav_about){
+                    Intent intent = new Intent(MainActivity.this,AboutActivity.class);
                     startActivity(intent);
-
+                }
+                //退出
+                if(menuItem.getItemId()==R.id.nav_exit){
+                   // showText("敬请期待...");
+                    finish();
                 }
                 return false;
             }
         });
 
+    }
+    //跳转个人中心
+    public void user_info(){
+        System.out.println("读取图像中..."+person+person.toString());
 
+        Intent intent = new Intent(MainActivity.this,Lmenu_user.class);
+
+        Bundle bundle = new Bundle();
+        for(user U:user_lists){
+            bundle.putString("uid",uid);
+            bundle.putString("uname",U.getUname());
+            bundle.putString("uinfo",U.getUinfo());
+            bundle.putString("uphoto1",U.getUphoto1());
+            bundle.putString("uphoto2",U.getUphoto2());
+            bundle.putString("email",U.getEmail());
+
+        }
+        intent.putExtra("user_list",bundle);
+        startActivity(intent);
 
     }
     //加载用户信息
@@ -273,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
 
                 try {
                     ArrayList<user> user_lists=DB_user.SearchUser(uid);
-                    com.clannad.menu.FTP.File file=new com.clannad.menu.FTP.File();
+                    FileUtill file=new FileUtill();
                     if(user_lists !=null){
                        for(user U:user_lists){
 
@@ -335,7 +341,6 @@ public class MainActivity extends AppCompatActivity {
         }).start();
 
     }
-
 
     //增加一个笔记
     void addNote(){
@@ -458,6 +463,33 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
+
+    public void showText(String text){
+        Toast toast=Toast.makeText(getApplicationContext(), "  "+text,Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+
+        LinearLayout linearLayout = (LinearLayout) toast.getView();
+        TextView messageTextView = (TextView) linearLayout.getChildAt(0);
+        messageTextView.setTextSize(messageTextView.getTextSize()/2);
+        //创建图片视图对象
+        CircleImageView imageView= new CircleImageView(getApplicationContext());
+        //设置图片
+       // imageView.setImageResource(R.drawable.miku1);
+///storage/emulated/0/BDH.notes/
+       Bitmap pic1= BitmapFactory.decodeFile("storage/emulated/0/BDH.notes/miku.jpg");
+       imageView.setImageBitmap(pic1);
+
+        //获得toast的布局
+        LinearLayout toastView = (LinearLayout) toast.getView();
+
+        //设置此布局为横向的
+        //toastView.setOrientation(LinearLayout.HORIZONTAL);
+         toastView.setOrientation(LinearLayout.VERTICAL);
+        //将ImageView在加入到此布局中的第一个位置
+        toastView.addView(imageView, 0);
+        toast.show();
+    }
 }
 
 

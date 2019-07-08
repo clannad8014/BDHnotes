@@ -1,11 +1,15 @@
 package com.clannad.menu;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,16 +17,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.clannad.menu.DB.DB_user;
+import com.clannad.menu.FTP.FileUtill;
 import com.clannad.menu.models.user;
 
+import java.io.File;
+import java.text.NumberFormat;
 import java.util.ArrayList;
-
 public class Login extends AppCompatActivity {
     private Button loginBtn;
     TextView registerBtn;
     EditText loginName;
     EditText loginPwd;
-
+    //读写权限
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    //请求状态码
+    private static int REQUEST_PERMISSION_CODE = 1;
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
         @Override
@@ -39,6 +50,8 @@ public class Login extends AppCompatActivity {
 
         }
     };
+    private NumberFormat PermissionHelper;
+    private NumberFormat permissionHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,28 +61,43 @@ public class Login extends AppCompatActivity {
         loginName=(EditText)findViewById(R.id.login_name);
         loginPwd=(EditText)findViewById(R.id.login_pwd);
         loginBtn=(Button)findViewById(R.id.btn_login);
+        registerBtn=(TextView)findViewById(R.id.btn_register);
+
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_PERMISSION_CODE);
+            }
+        }
+
+
+    }
+
+
+
+FileUtill f=new FileUtill();
+    @Override
+    protected void onStart() {
+        super.onStart();
+        login();
+        regist();
+        CreatFile("/storage/emulated/0/BDH.notes/");
+        CreatFile("/storage/emulated/0/BDH.notes/content");
+
+
+    }
+    public void CreatFile(String path){
+        File file = new File(path);
+        if (!file.exists()) {
+            /**  注意这里是 mkdirs()方法  可以创建多个文件夹 */
+            file.mkdirs();
+        }
+    }
+    public void login(){
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //返回键
-
-                   // String ip = sqlipedit.getText().toString();
-    /*远程服务器的ip跟端口号，使用账号、密码，不同的数据库使用的连接端口、命令都不同
-        mysql使用的连接命令：jdbc:mysql//192.168.1.xxx:3306
-    */ //jdbc:mysql://localhost:8806/test
-/*
-                    try{
-                        Class.forName("com.mysql.jdbc.Driver");
-//                    Connection con = DriverManager.getConnection("jdbc:mysql:"+"//188.131.255.217:3306",
-//                            "haolayo_club","riheCjsM6A4X5TFJ");
-                    System.out.println("连接成功");
-                }catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                        System.out.println("失败");
-                    }
-*/
-
-                System.out.println("================================");
 
                 new Thread(new Runnable() {
                     @Override
@@ -77,26 +105,24 @@ public class Login extends AppCompatActivity {
                         Message message = handler.obtainMessage();
                         try {
                             user u=new user();
-                            // DB_user user=new DB_user();
-                           // Message message = handler.obtainMessage();
-                            String name=loginName.getText().toString();
-                            String pwd=loginPwd.getText().toString();
+                            String name=loginName.getText().toString().trim();
+                            String pwd=loginPwd.getText().toString().trim();
                             ArrayList<user> list= DB_user.SearchId(name);
                             if(list!= null){
 
                                 String s = "查询成功";
-                                String str="";
+                                String str="sa";
                                 for(user U : list){
-                                    str += U.getPwd();
-
+                                    str=U.getPwd();
                                 }
-                               //uname.equals(s1.trim())
-                                if(str.trim().equals(pwd.trim())){
+                              //  DB_user.login(name,pwd);
+                              //  System.out.println("登录 DB_user.login(name,pwd)="+ DB_user.login(name,pwd));
+                                //uname.equals(s1.trim())
+                                if(str.trim().equals(pwd)){
+                                    System.out.println("登录成功:+str="+str+"pwd="+pwd);
                                     Intent intent = new Intent(Login.this, MainActivity.class);
                                     Bundle bundle = new Bundle();
-
-                                    bundle.putString("uid","sa");
-
+                                    bundle.putString("uid",name);
                                     intent.putExtras(bundle);
                                     startActivity(intent);
 
@@ -105,7 +131,7 @@ public class Login extends AppCompatActivity {
                                     message.obj = "密码输入错误！！！";
                                 }
                                 System.out.println("name="+name+" pwd="+pwd);
-                                System.out.println("登录成功:+str="+str+"pwd="+pwd);
+
 
                                 //  Toast.makeText(Login.this, "ojbk\n", Toast.LENGTH_LONG).show();
                             }else {
@@ -120,7 +146,7 @@ public class Login extends AppCompatActivity {
                             message.obj = "！！!";
                             System.out.println("登录失败"+e);
                         }
-                         handler.sendMessage(message);
+                        handler.sendMessage(message);
                     }
                 }).start();
                 System.out.println("登录成功");
@@ -129,7 +155,30 @@ public class Login extends AppCompatActivity {
 
             }
         });
+//        registerBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                //返回键
+//                Intent intent = new Intent(Login.this, Regist_Activity.class);
+//                startActivity(intent);
+//            }
+//        });
     }
+    public void regist(){
+        registerBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                System.out.println("注册=========================");
+                Intent intent = new Intent(Login.this, Regist_Activity.class);
+                startActivity(intent);
+            }
+        });
+    }
+
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+
+
+
 }
 /*
 public class Login extends Activity implements View.OnClickListener {

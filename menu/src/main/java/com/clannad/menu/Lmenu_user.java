@@ -25,21 +25,16 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.clannad.menu.DB.DB_user;
+import com.clannad.menu.FTP.FileUtill;
 import com.clannad.menu.FTP.NetWorkUtil;
-import com.clannad.menu.models.show_list;
 import com.clannad.menu.models.user;
-import com.clannad.menu.models.user_note_list;
 import com.clannad.menu.weight.CircleImageView;
 
 import java.io.File;
@@ -51,20 +46,18 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import butterknife.BindView;
-import butterknife.OnClick;
-
 
 public class Lmenu_user extends AppCompatActivity {
 
     ArrayList<user> user_lists;//用户信息列表
     CircleImageView mine_avatar;
+    ImageButton img_back;
     TextView mine_nick,sign_content,account_content,match_name,match_email;
     String name,info,photo1,photo2,email,uid;
     String result="";
     Boolean flag=false;
     String creatTime;
-    com.clannad.menu.FTP.File f=new com.clannad.menu.FTP.File();
+    FileUtill f=new FileUtill();
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
@@ -128,6 +121,7 @@ public class Lmenu_user extends AppCompatActivity {
         account_content=findViewById(R.id.account_content);
         match_name=findViewById(R.id.match_name);
         match_email=findViewById(R.id.match_email);
+        img_back=findViewById(R.id.img_back);
 
         Intent intent = getIntent();
         Bundle bundle = intent.getBundleExtra("user_list");
@@ -158,7 +152,6 @@ public class Lmenu_user extends AppCompatActivity {
         update();//修改信息
 
 
-        getAndroiodScreenProperty();
     }
 
     //修改信息
@@ -306,6 +299,14 @@ public class Lmenu_user extends AppCompatActivity {
                 showText(uid);
             }
         });
+
+        img_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
     }
     //修改昵称
     public void update_uname(){
@@ -356,6 +357,7 @@ public class Lmenu_user extends AppCompatActivity {
                 }).show();
     }
 
+    //获取手机尺寸
     public void getAndroiodScreenProperty() {
         WindowManager wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics dm = new DisplayMetrics();
@@ -396,7 +398,7 @@ public void showText(String text){
             messageTextView.setTextSize(messageTextView.getTextSize());
         //创建图片视图对象
             //ImageView imageView= new ImageView(getApplicationContext());
-    CircleImageView imageView= new CircleImageView(getApplicationContext());
+        CircleImageView imageView= new CircleImageView(getApplicationContext());
              //设置图片
            // imageView.setImageResource(R.drawable.miku1);
 
@@ -409,7 +411,7 @@ public void showText(String text){
 
     //设置此布局为横向的
             toastView.setOrientation(LinearLayout.HORIZONTAL);
-                // toastView.setOrientation(LinearLayout.VERTICAL);
+           // toastView.setOrientation(LinearLayout.VERTICAL);
         //将ImageView在加入到此布局中的第一个位置
             toastView.addView(imageView, 0);
             toast.show();

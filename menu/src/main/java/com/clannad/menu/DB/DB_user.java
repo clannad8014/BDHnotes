@@ -51,6 +51,7 @@ public class DB_user {
         Connection conn = getConn();
         String sql="" +
                 "select pwd from user where uid = ?";
+
         PreparedStatement psmt = conn.prepareStatement(sql);
         psmt.setString(1,uid);
 
@@ -63,27 +64,56 @@ public class DB_user {
             u.setPwd(rs.getString("pwd"));
             user.add(u);
         }
+        rs.close();
+        psmt.close();
         return user;
     }
 
-    public static ArrayList<test> login() throws SQLException {
+    public static int login(String uid,String pwd) throws SQLException {
 
         //Connection conn = DBUtil.getConnection();
         Connection conn = getConn();
         Statement stmt = conn.createStatement();
-        ResultSet rs =  stmt.executeQuery("select * from user");
-        ArrayList<test> test = new ArrayList<test>();
-        test b = null;
-        while(rs.next()){//如果对象中有数据，就会循环打印出来
-            b = new test();
-            b.setUid(rs.getString("uid"));
-            b.setPwd(rs.getString("pwd"));
-            b.setUphone(rs.getInt("uphone"));
-            test.add(b);
-        }
-        return test;
+       // ResultSet rs =  stmt.executeQuery("SELECT count(*)  from user where uid=? and pwd=?");
+        String sql="select * from user where uid = ?";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setString(1,uid);
+        psmt.setString(2,pwd);
+        //执行SQL语句
+        ResultSet rs = psmt.executeQuery();
+//        ArrayList<test> test = new ArrayList<test>();
+//        test b = null;
+//        while(rs.next()){//如果对象中有数据，就会循环打印出来
+//            b = new test();
+//            b.setUid(rs.getString("uid"));
+//            b.setPwd(rs.getString("pwd"));
+//            test.add(b);
+//        }
+        System.out.println("6666666666666666:   "+rs.toString());
+        return  Integer.parseInt(rs.toString());
     }
 
+    //创建账号
+    public  void Regist(String uid,String pwd)throws SQLException{
+        //首先拿到数据库的连接
+        Connection conn = getConn();
+
+        String sql1= "insert into user "+
+                "(uid,pwd,uphoto1,uphoto2,uname,uinfo,email)"+
+                "values(?,?,'miku.jpg','/storage/emulated/0/BDH.notes/','root','好记性不如烂笔头','123@gmail.com')";//参数用?表示，相当于占位符;
+
+
+        //预编译sql语句
+        PreparedStatement psmt1 = conn.prepareStatement(sql1);
+
+        //先对应SQL语句，给SQL语句传递参数
+        psmt1.setString(1,uid);
+        psmt1.setString(2,pwd);
+
+        //执行SQL语句
+        psmt1.execute();
+        psmt1.close();
+    }
 
     //修改昵称
     public void updateUname(user U)throws SQLException{

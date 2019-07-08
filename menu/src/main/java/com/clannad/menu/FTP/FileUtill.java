@@ -1,22 +1,13 @@
 package com.clannad.menu.FTP;
 
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.view.View;
-import android.widget.Toast;
-
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class File {
+public class FileUtill {
     String creatTime;
 
     //上传图片
@@ -103,5 +94,34 @@ public class File {
             file.delete();
         }
     }
+
+    public static boolean createFile(String filePath, String fileName) {
+
+        String strFilePath = filePath + fileName;
+
+        File file = new File(filePath);
+        if (!file.exists()) {
+            /**  注意这里是 mkdirs()方法  可以创建多个文件夹 */
+            file.mkdirs();
+        }
+
+        File subfile = new File(strFilePath);
+
+        if (!subfile.exists()) {
+            try {
+                boolean b = subfile.createNewFile();
+                return b;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            return true;
+        }
+        return false;
+    }
+
+
+
+
 
 }
