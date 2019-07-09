@@ -30,6 +30,7 @@ import android.text.Spanned;
 import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -67,6 +68,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AddActivity extends AppCompatActivity {
+    long exitTime=0;//退出变量 
     int delPosition=-1;            //用来删除的一个变量，因为内部类要用
     String bid ; //笔记号
     String ttt ; //笔记标题
@@ -157,7 +159,15 @@ public class AddActivity extends AppCompatActivity {
         }
     };
 
-
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode==KeyEvent.KEYCODE_BACK)
+        {
+            exit();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -973,6 +983,16 @@ public class AddActivity extends AppCompatActivity {
     }
 
 
+
+    void exit(){
+        if((System.currentTimeMillis()-exitTime)>2000){
+            Toast.makeText(AddActivity.this, "再按一次返回主界面", Toast.LENGTH_SHORT).show();
+            exitTime=System.currentTimeMillis();
+            Log.i("exittime", ""+exitTime);
+        }else {
+            finish();
+        }
+    }
 
 
 

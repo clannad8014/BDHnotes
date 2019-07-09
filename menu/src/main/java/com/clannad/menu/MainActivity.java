@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.view.Gravity;
 import android.text.Layout;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,7 +48,7 @@ import java.util.zip.Inflater;
 
 public class MainActivity extends AppCompatActivity {
     int delPosition=-1;            //用来删除的一个变量，因为内部类要用
-    int testnum=0;
+    long exitTime=0;//退出变量
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -174,6 +175,16 @@ public class MainActivity extends AppCompatActivity {
  //****************
 
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode==KeyEvent.KEYCODE_BACK)
+        {
+            exit();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -800,6 +811,18 @@ public class MainActivity extends AppCompatActivity {
         btn_add_room.setOnClickListener(clickListener);
         btn_joins.setOnClickListener(clickListener);
         btn_join_room.setOnClickListener(clickListener);
+    }
+
+
+    void exit(){
+        if((System.currentTimeMillis()-exitTime)>2000){
+            Toast.makeText(MainActivity.this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+            exitTime=System.currentTimeMillis();
+            Log.i("exittime", ""+exitTime);
+        }else {
+            finish();
+            System.exit(0);
+        }
     }
 
 }

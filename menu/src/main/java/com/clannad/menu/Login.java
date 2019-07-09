@@ -125,6 +125,7 @@ FileUtill f=new FileUtill();
                                     bundle.putString("uid",name);
                                     intent.putExtras(bundle);
                                     startActivity(intent);
+                                    finish();
 
                                 }else {
                                     message.what = 0x12;

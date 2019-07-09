@@ -26,6 +26,7 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ImageSpan;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -51,6 +52,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class OnlineEditActivity extends AppCompatActivity {
+    long exitTime=0;//退出变量
+
     String uid;
     int rid;
     String rtitle;
@@ -574,6 +577,25 @@ public class OnlineEditActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode==KeyEvent.KEYCODE_BACK)
+        {
+            exit();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    void exit(){
+        if((System.currentTimeMillis()-exitTime)>2000){
+            Toast.makeText(OnlineEditActivity.this, "再按一次返回主界面", Toast.LENGTH_SHORT).show();
+            exitTime=System.currentTimeMillis();
+            Log.i("exittime", ""+exitTime);
+        }else {
+            finish();
+        }
+    }
 
 
 
