@@ -40,9 +40,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.clannad.menu.DB.Sqls;
+import com.clannad.menu.FTP.FileTool;
 import com.clannad.menu.FTP.FileUtill;
 import com.clannad.menu.FTP.NetWorkUtil;
 import com.clannad.menu.models.RoomContent;
+import com.clannad.menu.models.user;
 import com.clannad.menu.weight.CircleImageView;
 
 import java.io.File;
@@ -108,9 +110,9 @@ public class OnlineEditActivity extends AppCompatActivity {
 
             switch (msg.what){
                 case 0x11:
-                    String neirong=(String) msg.obj;
-
-                    online_textview.setText(neirong);
+                 //   String neirong=(String) msg.obj;
+                    online_textview.setText((CharSequence) msg.obj);
+                    //online_textview.setText(neirong);
                     //loadImg(neirong);
                     break;
                 case 0x35:
@@ -147,7 +149,14 @@ public class OnlineEditActivity extends AppCompatActivity {
                     f.deletePhotoWithPath("/storage/emulated/0/BDH.notes/upload");
                     Toast.makeText(OnlineEditActivity.this, sss, Toast.LENGTH_LONG).show();
                     break;
-
+                case 0x24:case 0x25:
+                    //上传图片
+                    String s4 = (String) msg.obj;
+                    System.out.println(s4);
+                    initToolBar();
+                    System.out.println("============0x25 加载成功00--  ");
+                    //Toast.makeText(OnlineEditActivity.this, s4, Toast.LENGTH_LONG).show();
+                    break;
 
 
             }
@@ -165,13 +174,52 @@ public class OnlineEditActivity extends AppCompatActivity {
         rid=bundle.getInt("rid");
         rtitle=bundle.getString("rtitle");
         rtime=bundle.getString("rtime");
-        rboss=bundle.getString("uid");
+        rboss=bundle.getString("rboss");
         Master_path=bundle.getString("Master_path");
         //初始化基本参数
-       init();
 
+        init();
+        initMaster();
+        initToolBar();
     }
 
+    void initMaster(){
+        Sqls db=new Sqls();
+        Message message = new Message();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    user U =db.selRoomMaster(rid);
+                    Master_path=U.getUphoto2()+U.getUphoto1();
+                    File file1=new File(U.getUphoto2()+U.getUphoto1());
+
+                    //判断图片是否存在
+                    FileUtill file=new FileUtill();
+                    if(!file1.exists()){
+                        System.out.println("============不存在  下载图片--  ");
+                        //如果不存在  下载图片
+                        Boolean flag=file.aboutTakePhotoDown(U.getUphoto1(),U.getUphoto2());
+                        if(flag){
+                            System.out.println("============下载图片成功--  ");
+                            message.what = 0x24;
+                            message.obj="加载成功";
+                        }
+
+                    }else{
+                        message.what = 0x25;
+                        message.obj="加载成功";
+                    }
+                    System.out.println("============0x25 加载成功--  "+Master_path);
+
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                handler.sendMessage(message);
+            }
+        }).start();
+    }
     @Override
     protected void onStart() {
         super.onStart();
@@ -189,7 +237,7 @@ public class OnlineEditActivity extends AppCompatActivity {
                     for (RoomContent rc : roomContents) {
                         neirong += rc.getUid() + ":" + rc.getXcontent() + "      ";
                     }
-                    //=========================
+                    //=========================********************************************************
 
                         String input =neirong;
                         Pattern p = Pattern.compile("\\<img src=\".*?\"\\/>");
@@ -244,24 +292,25 @@ public class OnlineEditActivity extends AppCompatActivity {
                             }
                         }
 
-                        message.what = 0x25;
-                        message.obj=spannable;
+                      //  message.what = 0x25;
+                        //message.obj=spannable;
                         System.out.println("=================加载中0...........");
 
-                        handler.sendMessage(message);
+                       // handler.sendMessage(message);
                         //content.append("\n");
                         //Log.d("YYPT_RGX_SUCCESS",content.getText().toString());
 
-                    //============================
+                    //============================*************************************************
                     message.what = 0x11;
-                    message.obj = neirong;
+                    message.obj=spannable;
+                    //message.obj = neirong;
                 } catch (SQLException e) {
                     message.what = 0x12;
                     message.obj = "查询内容失败";
                 }
                 handler.sendMessage(message);
             }
-        }, 0, 1000);//每隔一秒使用handler发送一下消息,也就是每隔一秒执行一次,一直重复执行
+        }, 0, 5000);//每隔一秒使用handler发送一下消息,也就是每隔一秒执行一次,一直重复执行
 
 
     }
@@ -290,7 +339,7 @@ public class OnlineEditActivity extends AppCompatActivity {
         //初始化控件各种事件
         initWidget();
         //初始化toolBar
-        initToolBar();
+
 
     }
     void initWidget(){
@@ -368,10 +417,10 @@ public class OnlineEditActivity extends AppCompatActivity {
     void initToolBar() {
 
         //设置显示的文字
-        online_toolbar.setTitle("房间号:"+rid+"      房间名:"+rtitle+"      用户:"+rboss);
+        online_toolbar.setTitle("房间号:"+rid+"      房间名:"+rtitle+"      用户:  ");
         //Master_path
         Bitmap pic1= BitmapFactory.decodeFile(Master_path);
-         main_person.setImageBitmap(pic1);
+        main_person.setImageBitmap(pic1);
         //将toolBar设置为该界面的Bar
         setSupportActionBar(online_toolbar);
     }

@@ -178,7 +178,7 @@ public class Sqls {
         return n;
     }
     //查询房主信息
-    public ArrayList<user> selRoomMaster(int rid) throws SQLException {
+    public user selRoomMaster(int rid) throws SQLException {
         Connection conn = getConn();
         //select u.uphoto1,uphoto2,u.uname,u.uid from room r,user u where r.rboss=u.uid and r.rid='1001'
         String sql= "select u.uphoto1,uphoto2,u.uname,u.uid from room r,user u where r.rboss=u.uid and r.rid=? ";
@@ -187,12 +187,12 @@ public class Sqls {
         //执行SQL语句
         ResultSet rs = psmt.executeQuery();
         //note_content n= new note_content();
-        ArrayList<user> arrayList=new ArrayList<>();
-        user U =null;
-       // user U=new user();
+       // ArrayList<user> arrayList=new ArrayList<>();
+        //user U =null;
+       user U=new user();
         while(rs.next()){
 //            U.setUid(rs.getString("uid"));
-            U=new user();
+           // U=new user();
             U.setUphoto1(rs.getString("uphoto1"));
             U.setUphoto2(rs.getString("uphoto2"));
             U.setUname(rs.getString("uname"));
@@ -201,7 +201,7 @@ public class Sqls {
         rs.close();
         psmt.close();
         System.out.println("======查询==============================");
-        return arrayList;
+        return U;
     }
     //查询自己加入的房间列表
     public  ArrayList<Room> selAllJoinRoom(String uid) throws SQLException {

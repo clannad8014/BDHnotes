@@ -616,11 +616,9 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
                 Room room= room_lists.get(i);
-                initRoom(room.getRid());
                 Intent intent = new Intent(MainActivity.this,OnlineEditActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("uid", uid);
-                bundle.putString("Master_path",Master_path);
                 bundle.putInt("rid",room.getRid());
                 bundle.putString("rtitle",room.getRtitle());
                 bundle.putString("rtime",room.getRtime());
@@ -639,37 +637,7 @@ public class MainActivity extends AppCompatActivity {
     String Master_uid=uid;
     String Master_uname=uid;
     String Master_path="/storage/emulated/0/BDH.notes/miku.jpg";
-//进入房间初始化
-    void initRoom(int rid){
-        Sqls db=new Sqls();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Message message = handler.obtainMessage();
-                try {
-
-                    ArrayList<user> lists= db.selRoomMaster(rid);
-                    for(user U:lists){
-                        Master_path=U.getUphoto2()+U.getUphoto1();
-                        Master_uname=U.getUname();
-                        Master_uid=U.getUid();
-                        System.out.println("读取房主信息......."+"("+U.getUphoto2()+U.getUphoto1());
-                    }
-                    System.out.println("读取房主信息2......."+Master_uname+Master_path+"(");
-//                        message.what = 0x28;
-//                        message.obj ="该用户没有房间" ;
-
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
-//                    message.what = 0x20;
-//                    message.obj ="查询过程出错" ;
-                }
-                handler.sendMessage(message);
-            }
-        }).start();
-    }
     void onlineEdit(){
         context = MainActivity.this;
         inflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
