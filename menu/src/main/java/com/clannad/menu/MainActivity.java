@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -18,11 +19,9 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.Gravity;
-import android.text.Layout;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,15 +34,20 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.clannad.menu.DB.*;
+import com.clannad.menu.DB.DB_user;
+import com.clannad.menu.DB.Sqls;
 import com.clannad.menu.FTP.FileUtill;
-import com.clannad.menu.models.*;
+import com.clannad.menu.models.Room;
+import com.clannad.menu.models.RoomContent;
+import com.clannad.menu.models.note_content;
+import com.clannad.menu.models.show_list;
+import com.clannad.menu.models.user;
+import com.clannad.menu.models.user_note_list;
 import com.clannad.menu.weight.CircleImageView;
 
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.zip.Inflater;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -67,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<show_list> show_lists;//用户笔记列表
     ArrayList<user> user_lists;//用户信息列表
     ArrayList<Room> room_lists;//房间表
-
+    ArrayList<user> room_init;//房间表
     //在线编辑弹窗
     private AlertDialog.Builder builder;
     private AlertDialog alertDialog;
@@ -612,15 +616,19 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
                 Room room= room_lists.get(i);
+                initRoom(room.getRid());
                 Intent intent = new Intent(MainActivity.this,OnlineEditActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("uid", uid);
+                bundle.putString("Master_path",Master_path);
                 bundle.putInt("rid",room.getRid());
                 bundle.putString("rtitle",room.getRtitle());
                 bundle.putString("rtime",room.getRtime());
                 bundle.putString("rboss",room.getRboss());
                 //System.out.println(sl.getA_content()+"------------------");
+                System.out.println("读取房主信息 .end 1......");
                 intent.putExtras(bundle);
+                System.out.println("读取房主信息.end 2......");
                 // intent.putExtra("sl", (Parcelable) sl);
                 startActivity(intent);
 
@@ -628,7 +636,40 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    String Master_uid=uid;
+    String Master_uname=uid;
+    String Master_path="/storage/emulated/0/BDH.notes/miku.jpg";
+//进入房间初始化
+    void initRoom(int rid){
+        Sqls db=new Sqls();
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = handler.obtainMessage();
+                try {
+
+                    ArrayList<user> lists= db.selRoomMaster(rid);
+                    for(user U:lists){
+                        Master_path=U.getUphoto2()+U.getUphoto1();
+                        Master_uname=U.getUname();
+                        Master_uid=U.getUid();
+                        System.out.println("读取房主信息......."+"("+U.getUphoto2()+U.getUphoto1());
+                    }
+                    System.out.println("读取房主信息2......."+Master_uname+Master_path+"(");
+//                        message.what = 0x28;
+//                        message.obj ="该用户没有房间" ;
+
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+//                    message.what = 0x20;
+//                    message.obj ="查询过程出错" ;
+                }
+                handler.sendMessage(message);
+            }
+        }).start();
+    }
     void onlineEdit(){
         context = MainActivity.this;
         inflater = (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);

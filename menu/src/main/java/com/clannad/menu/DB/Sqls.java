@@ -1,14 +1,18 @@
 package com.clannad.menu.DB;
+import com.clannad.menu.models.Room;
+import com.clannad.menu.models.RoomContent;
+import com.clannad.menu.models.note_content;
+import com.clannad.menu.models.show_list;
+import com.clannad.menu.models.user;
+import com.clannad.menu.models.user_note_list;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
 
-import com.clannad.menu.models.*;
 import static com.clannad.menu.DB.DBUtils.getConn;
 public class Sqls {
 
@@ -173,7 +177,32 @@ public class Sqls {
         psmt.close();
         return n;
     }
-
+    //查询房主信息
+    public ArrayList<user> selRoomMaster(int rid) throws SQLException {
+        Connection conn = getConn();
+        //select u.uphoto1,uphoto2,u.uname,u.uid from room r,user u where r.rboss=u.uid and r.rid='1001'
+        String sql= "select u.uphoto1,uphoto2,u.uname,u.uid from room r,user u where r.rboss=u.uid and r.rid=? ";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setInt(1,rid);
+        //执行SQL语句
+        ResultSet rs = psmt.executeQuery();
+        //note_content n= new note_content();
+        ArrayList<user> arrayList=new ArrayList<>();
+        user U =null;
+       // user U=new user();
+        while(rs.next()){
+//            U.setUid(rs.getString("uid"));
+            U=new user();
+            U.setUphoto1(rs.getString("uphoto1"));
+            U.setUphoto2(rs.getString("uphoto2"));
+            U.setUname(rs.getString("uname"));
+            U.setUid(rs.getString("uid"));
+        }
+        rs.close();
+        psmt.close();
+        System.out.println("======查询==============================");
+        return arrayList;
+    }
     //查询自己加入的房间列表
     public  ArrayList<Room> selAllJoinRoom(String uid) throws SQLException {
         Connection conn = getConn();
