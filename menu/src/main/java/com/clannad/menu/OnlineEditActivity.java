@@ -40,11 +40,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.clannad.menu.DB.Sqls;
-import com.clannad.menu.FTP.FileTool;
 import com.clannad.menu.FTP.FileUtill;
 import com.clannad.menu.FTP.NetWorkUtil;
 import com.clannad.menu.models.RoomContent;
+import com.clannad.menu.models.note_content;
 import com.clannad.menu.models.user;
+import com.clannad.menu.models.user_note_list;
 import com.clannad.menu.weight.CircleImageView;
 
 import java.io.File;
@@ -62,6 +63,7 @@ import java.util.regex.Pattern;
 
 public class OnlineEditActivity extends AppCompatActivity {
     long exitTime=0;//退出变量
+    String content="";
 
     String uid;
     int rid;
@@ -78,7 +80,7 @@ public class OnlineEditActivity extends AppCompatActivity {
     EditText online_edittext;
     Button online_member;
     Button online_addimg;
-    Button online_loadimg;
+    Button online_daochu;
     Button online_save;
     Button online_history;
     NavigationView online_left;
@@ -246,6 +248,8 @@ public class OnlineEditActivity extends AppCompatActivity {
                     ArrayList<RoomContent> roomContents = sqls.selAllRoomContent(rid);
                     for (RoomContent rc : roomContents) {
                         neirong += rc.getUid() + ":" + rc.getXcontent() + "      ";
+
+                        content+=rc.getXcontent();
                     }
                     //=========================********************************************************
 
@@ -331,7 +335,7 @@ public class OnlineEditActivity extends AppCompatActivity {
         online_edittext=findViewById(R.id.online_edittext);
         online_member=findViewById(R.id.online_member);
         online_addimg=findViewById(R.id.online_addimg);
-        online_loadimg=findViewById(R.id.online_loadimg);
+        online_daochu =findViewById(R.id.online_daochu);
         online_save=findViewById(R.id.online_save);
         online_history=findViewById(R.id.online_history);
         online_left=findViewById(R.id.online_left);
@@ -372,11 +376,53 @@ public class OnlineEditActivity extends AppCompatActivity {
             }
         });
 
-        //加载图片
-        online_loadimg.setOnClickListener(new View.OnClickListener() {
+        // 导出
+        online_daochu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               // loadImg();
+               //弹窗
+                AlertDialog.Builder builder = new AlertDialog.Builder(OnlineEditActivity.this);
+                builder.setIcon(R.drawable.flag4_2);
+                builder.setTitle("导出笔记");
+                builder.setMessage("是否要添加到笔记？");
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Sqls sqls=new Sqls();
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Message message = handler.obtainMessage();
+                                try {
+                                    user_note_list unl=new user_note_list(uid);
+                                    unl.setTitle(rtitle);
+                                    note_content nc =new note_content();
+                                    nc.setBid(unl.getBid());
+                                    nc.setXcontent(content);
+                                    nc.setXtime(unl.getCtime());
+                                    nc.setXid(unl.getUid());
+                                    Sqls sqls=new Sqls();
+                                    sqls.addOneNote(unl,nc);
+                                    message.what = 0x33;
+                                    message.obj ="导出成功" ;
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                    message.what = 0x34;
+                                    message.obj ="导出失败" ;
+                                }
+
+                                handler.sendMessage(message);
+                            }
+                        }).start();
+                    }
+                });
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //取消
+                    }
+                });
+                builder.show();
             }
         });
 

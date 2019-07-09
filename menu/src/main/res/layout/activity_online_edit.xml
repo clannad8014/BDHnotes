@@ -47,7 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#4803A9F4"
-            android:minHeight="40dp"
+            android:minHeight="100dp"
             android:layout_marginLeft="18dp"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
@@ -95,7 +95,7 @@
                 android:layout_weight="1"
                 android:text="添加图片"/>
             <Button
-                android:id="@+id/online_loadimg"
+                android:id="@+id/online_daochu"
                 android:background="#4803A9F4"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -104,7 +104,7 @@
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
                 android:layout_weight="1"
-                android:text="加载图片"/>
+                android:text="导出"/>
             <Button
                 android:id="@+id/online_save"
                 android:background="#4803A9F4"
