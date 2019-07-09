@@ -1,5 +1,6 @@
 package com.clannad.menu;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -26,22 +27,35 @@ public class Regist_Activity extends AppCompatActivity {
         Regist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //str.trim().equals(pwd)
+                //str.trim().equalsI/System.out: name= pwd=(pwd)
                 System.out.println("uname:("+uname.getText()+") pwd:("+ pwd.getText()+") Rpwd:("+Rpwd.getText()+")");
                 if(uname.getText().toString().trim().length()>0 && pwd.getText().toString().trim().length()>0 && Rpwd.getText().toString().trim().length()>0 ){
-                    if(pwd.getText().toString()==Rpwd.getText().toString()){
-                        try {
-                            System.out.println("注册..........");
-                            DB_user db=new DB_user();
-                            db.Regist(uname.getText().toString(),pwd.getText().toString());
-                           // db.Regist("ssa","2233");
-                            System.out.println("注册成功..........");
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
+                    if(pwd.getText().toString().equals(Rpwd.getText().toString())){
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                try {
+                                    System.out.println("注册..........");
+                                    DB_user db=new DB_user();
+                                    db.Regist(uname.getText().toString(),pwd.getText().toString());
+                                    System.out.println("注册成功..........");
+                                    Intent intent = new Intent(Regist_Activity.this, Login.class);
+                                    startActivity(intent);
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+
+                                }
 
 
+                            }
+                        }).start();
+
+                    }else{
+                        System.out.println("两次密码不相等..........");
                     }
+                }else{
+                    System.out.println("不能为空..........");
                 }
             }
         });

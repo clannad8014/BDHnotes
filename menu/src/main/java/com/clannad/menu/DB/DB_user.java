@@ -97,22 +97,22 @@ public class DB_user {
     public  void Regist(String uid,String pwd)throws SQLException{
         //首先拿到数据库的连接
         Connection conn = getConn();
-
-        String sql1= "insert into user "+
+        String sql= "insert into user "+
                 "(uid,pwd,uphoto1,uphoto2,uname,uinfo,email)"+
                 "values(?,?,'miku.jpg','/storage/emulated/0/BDH.notes/','root','好记性不如烂笔头','123@gmail.com')";//参数用?表示，相当于占位符;
 
+      //  String sql1="select * from user where uid = ?";
 
         //预编译sql语句
-        PreparedStatement psmt1 = conn.prepareStatement(sql1);
+       PreparedStatement psmt = conn.prepareStatement(sql);
 
         //先对应SQL语句，给SQL语句传递参数
-        psmt1.setString(1,uid);
-        psmt1.setString(2,pwd);
-
+        psmt.setString(1,uid);
+        psmt.setString(2,pwd);
+       // ResultSet rs = psmt1.executeQuery();
         //执行SQL语句
-        psmt1.execute();
-        psmt1.close();
+        psmt.execute();
+        psmt.close();
     }
 
     //修改昵称
