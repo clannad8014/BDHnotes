@@ -10,6 +10,8 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -19,7 +21,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -35,12 +37,17 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.support.v7.widget.Toolbar;
 
 import com.clannad.menu.DB.Sqls;
+import com.clannad.menu.FTP.FileUtill;
+import com.clannad.menu.FTP.NetWorkUtil;
 import com.clannad.menu.models.RoomContent;
-import com.clannad.menu.models.note_content;
+import com.clannad.menu.weight.CircleImageView;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -56,9 +63,10 @@ public class OnlineEditActivity extends AppCompatActivity {
     String rtitle;
     String rtime;
     String rboss;
+    String Master_path;
     int delPosition=-1;            //用来删除的一个变量，因为内部类要用
     ArrayList<RoomContent> roomContents;
-
+    CircleImageView main_person;
     Toolbar online_toolbar;
     TextView online_textview;
     EditText online_edittext;
@@ -98,7 +106,9 @@ public class OnlineEditActivity extends AppCompatActivity {
             switch (msg.what){
                 case 0x11:
                     String neirong=(String) msg.obj;
+
                     online_textview.setText(neirong);
+                    //loadImg(neirong);
                     break;
                 case 0x35:
                     String s1 = (String) msg.obj;
@@ -127,6 +137,13 @@ public class OnlineEditActivity extends AppCompatActivity {
                     //长按事件
                     lvLongClick();
                     break;
+                case 0x22:case 0x23:
+                    //上传图片
+                    String sss = (String) msg.obj;
+                    System.out.println(sss);
+                    f.deletePhotoWithPath("/storage/emulated/0/BDH.notes/upload");
+                    Toast.makeText(OnlineEditActivity.this, sss, Toast.LENGTH_LONG).show();
+                    break;
 
 
 
@@ -146,6 +163,7 @@ public class OnlineEditActivity extends AppCompatActivity {
         rtitle=bundle.getString("rtitle");
         rtime=bundle.getString("rtime");
         rboss=bundle.getString("uid");
+        Master_path=bundle.getString("Master_path");
         //初始化基本参数
        init();
 
@@ -159,6 +177,7 @@ public class OnlineEditActivity extends AppCompatActivity {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
+
                 String neirong = "";
                 Message message = new Message();
                 Sqls sqls = new Sqls();
@@ -167,6 +186,70 @@ public class OnlineEditActivity extends AppCompatActivity {
                     for (RoomContent rc : roomContents) {
                         neirong += rc.getUid() + ":" + rc.getXcontent() + "      ";
                     }
+                    //=========================
+
+                        String input =neirong;
+                        Pattern p = Pattern.compile("\\<img src=\".*?\"\\/>");
+                        Matcher m = p.matcher(input);
+                        SpannableString spannable = new SpannableString(input);
+                      //  Message message = handler.obtainMessage();
+
+                        while(m.find()){
+                            //Log.d("YYPT_RGX", m.group());
+                            //这里s保存的是整个式子，即<img src="xxx"/>，start和end保存的是下标
+                            String s = m.group();
+                            int start = m.start();
+                            int end = m.end();
+
+                            //path是去掉<img src=""/>的中间的图片路径
+                            String path = s.replaceAll("\\<img src=\"|\"\\/>","").trim();
+                            String b = path.substring(path.lastIndexOf("/") + 1, path.length());
+                            //--------------------------------------------------
+
+
+                            File file1=new File(path);
+                            //判断图片是否存在
+                            if(!file1.exists()){
+                                System.out.println("============不存在  下载图片--  ");
+                                //如果不存在  下载图片
+                                Boolean flag=f.aboutTakePhotoDown(b,"/storage/emulated/0/BDH.notes/content/");
+                                if(flag){
+                                    System.out.println("============下载图片成功--  ");
+                                }else{
+                                    System.out.println("============下载图片失败--  ");
+                                }
+
+                            }
+
+
+                            System.out.println("------------------加载path："+path);
+                            System.out.println("------------------加载name:："+b);
+
+
+                            //利用spannableString和ImageSpan来替换掉这些图片
+                            int width = ScreenUtils.getScreenWidth(OnlineEditActivity.this);
+                            int height = ScreenUtils.getScreenHeight(OnlineEditActivity.this);
+
+                            try {
+                                BitmapFactory.Options options = new BitmapFactory.Options();
+                                Bitmap bitmap = BitmapFactory.decodeFile(path, options);
+                                bitmap = ImageUtils.zoomImage(bitmap,(width-32)*0.8,bitmap.getHeight()/(bitmap.getWidth()/((width-32)*0.8)));
+                                ImageSpan imageSpan = new ImageSpan(OnlineEditActivity.this, bitmap);
+                                spannable.setSpan(imageSpan, start, end, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+
+                        message.what = 0x25;
+                        message.obj=spannable;
+                        System.out.println("=================加载中0...........");
+
+                        handler.sendMessage(message);
+                        //content.append("\n");
+                        //Log.d("YYPT_RGX_SUCCESS",content.getText().toString());
+
+                    //============================
                     message.what = 0x11;
                     message.obj = neirong;
                 } catch (SQLException e) {
@@ -192,6 +275,7 @@ public class OnlineEditActivity extends AppCompatActivity {
         online_left=findViewById(R.id.online_left);
         online_right=findViewById(R.id.online_right);
         online_drawerlayout=findViewById(R.id.online_drawerlayout);
+        main_person=findViewById(R.id.main_uphoto);
         //左
         navigationView_left=findViewById(R.id.online_left);
         view_left=navigationView_left.getHeaderView(0);
@@ -228,7 +312,7 @@ public class OnlineEditActivity extends AppCompatActivity {
         online_loadimg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadImg();
+               // loadImg();
             }
         });
 
@@ -281,7 +365,10 @@ public class OnlineEditActivity extends AppCompatActivity {
     void initToolBar() {
 
         //设置显示的文字
-        online_toolbar.setTitle("No:"+rid+"         Name:"+rtitle+"         Master:"+rboss);
+        online_toolbar.setTitle("房间号:"+rid+"      房间名:"+rtitle+"      用户:"+rboss);
+        //Master_path
+        Bitmap pic1= BitmapFactory.decodeFile(Master_path);
+         main_person.setImageBitmap(pic1);
         //将toolBar设置为该界面的Bar
         setSupportActionBar(online_toolbar);
     }
@@ -301,8 +388,6 @@ public class OnlineEditActivity extends AppCompatActivity {
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //参考网址：http://blog.csdn.net/abc__d/article/details/51790806
-
         Bitmap bm = null;
         // 外界的程序访问ContentProvider所提供数据 可以通过ContentResolver接口
         ContentResolver resolver = getContentResolver();
@@ -320,8 +405,23 @@ public class OnlineEditActivity extends AppCompatActivity {
                 cursor.moveToFirst();
                 // 最后根据索引值获取图片路径
                 String path = cursor.getString(column_index);
-                //Log.e("insertIMG", "onActivityResult: ");
-                insertImg(path);
+                String b = path.substring(path.lastIndexOf("/") + 1, path.length());
+                //将目标图片放入目标目录
+                SimpleDateFormat formatter = new SimpleDateFormat("HHmmss");
+                Date curDate = new Date(System.currentTimeMillis());//获取当前时间
+                String path_name ="/storage/emulated/0/BDH.notes/content/"+rid+"_"+rtitle+formatter.format(curDate)+".jpg";
+                copyFile(path,path_name);
+                File file = new File(Environment.getExternalStorageDirectory(), "BDH.notes/upload/");
+                if (!file.mkdirs()) {
+                    System.out.println("========================文件创建失败"+file.mkdirs());
+                }
+                copyFile(path_name,"/storage/emulated/0/BDH.notes/upload/"+rid+"_"+rtitle+formatter.format(curDate)+".jpg");
+
+                //上传下载图片
+                upload(b);
+
+                //显示图片
+                insertImg(path_name);
             }catch (Exception e){
                 e.printStackTrace();
                 Toast.makeText(OnlineEditActivity.this,"图片插入失败",Toast.LENGTH_SHORT).show();
@@ -329,9 +429,76 @@ public class OnlineEditActivity extends AppCompatActivity {
         }
     }
 
+    public void copyFile(String oldPath, String newPath) {
+        try {
+            int byteread = 0;
+            File oldfile = new File(oldPath);
+            if (oldfile.exists()) {  //文件存在时
+                InputStream inStream = new FileInputStream(oldPath);  //读入原文件
+                FileOutputStream fs = new FileOutputStream(newPath);
+                byte[] buffer = new byte[1444];
+
+                while ((byteread = inStream.read(buffer)) != -1) {
+                    fs.write(buffer, 0, byteread);
+                }
+                System.out.println("复制单个文件操作1111");
+                inStream.close();
+            }
+        } catch (Exception e) {
+            System.out.println("复制单个文件操作出错"+e);
+            e.printStackTrace();
+
+        }
+
+    }
+    FileUtill f=new FileUtill();
+    //上传图片
+    public void upload(String photoname){   ///storage/emulated/0/BDH.notes/upload/
+        File filePhoto = new File(Environment.getExternalStorageDirectory(),"BDH.notes/upload");
+        File[] photoAllfiles = filePhoto.listFiles();
+        System.out.println("文件已存在！"+photoAllfiles);
+        if (photoAllfiles!=null) {
+            if (photoAllfiles.length == 0) {
+                Toast.makeText(OnlineEditActivity.this, "没有图片要上传", Toast.LENGTH_SHORT).show();
+            } else {
+                for (final File photoFile : photoAllfiles) {
+                    if (NetWorkUtil.isNetworkAvailable(OnlineEditActivity.this)) {
+
+                        new Thread() {
+                            @Override
+                            public void run() {
+                                Message message = handler.obtainMessage();
+
+                                boolean up_flag= f.aboutTakePhotoUp(photoFile);
+                                if(up_flag){
+
+                                    System.out.println("============上传图片成功--  "+photoFile.toString());
+                                    message.what = 0x22;
+                                    message.obj ="上传图片成功" ;
+
+                                }else{
+                                    message.what = 0x23;
+                                    message.obj ="上传图片失败" ;
+                                }
+                                handler.sendMessage(message);
+                            }
+                        }.start();
+                    } else {
+                        Toast.makeText(OnlineEditActivity.this, "对不起，没有网络！", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }else{
+            Toast.makeText(OnlineEditActivity.this, "没有图片要上传！", Toast.LENGTH_SHORT).show();
+        }
+    }
+    //==========================================
+
+
     //region 插入图片
     private void insertImg(String path){
         //Log.e("插入图片", "insertImg:" + path);
+        String photo_name=path.substring(path.lastIndexOf("/") + 1, path.length());
         String tagPath = "<img src=\""+path+"\"/>";//为图片路径加上<img>标签
         Bitmap bitmap = BitmapFactory.decodeFile(path);
         if(bitmap != null){
@@ -389,7 +556,78 @@ public class OnlineEditActivity extends AppCompatActivity {
     //  http://blog.sina.com.cn/s/blog_766aa3810100u8tx.html#cmt_523FF91E-7F000001-B8CB053C-7FA-8A0
     //  https://segmentfault.com/q/1010000004268968
     //  http://www.jb51.net/article/102683.htm
-  private void loadImg(){
+  private void loadImg(String neirong){
+
+      System.out.println("222=======");
+    //  showText("加载中...");
+      // LoadingDialog.getInstance(AddActivity.this).dismiss();
+      new Thread(new Runnable() {
+          @Override
+          public void run() {
+              String input =neirong;
+              Pattern p = Pattern.compile("\\<img src=\".*?\"\\/>");
+              Matcher m = p.matcher(input);
+              SpannableString spannable = new SpannableString(input);
+              Message message = handler.obtainMessage();
+
+              while(m.find()){
+                  //Log.d("YYPT_RGX", m.group());
+                  //这里s保存的是整个式子，即<img src="xxx"/>，start和end保存的是下标
+                  String s = m.group();
+                  int start = m.start();
+                  int end = m.end();
+
+                  //path是去掉<img src=""/>的中间的图片路径
+                  String path = s.replaceAll("\\<img src=\"|\"\\/>","").trim();
+                  String b = path.substring(path.lastIndexOf("/") + 1, path.length());
+                  //--------------------------------------------------
+
+
+                  File file1=new File(path);
+                  //判断图片是否存在
+                  if(!file1.exists()){
+                      System.out.println("============不存在  下载图片--  ");
+                      //如果不存在  下载图片
+                      Boolean flag=f.aboutTakePhotoDown(b,"/storage/emulated/0/BDH.notes/content/");
+                      if(flag){
+                          System.out.println("============下载图片成功--  ");
+                      }else{
+                          System.out.println("============下载图片失败--  ");
+                      }
+
+                  }
+
+
+                  System.out.println("------------------加载path："+path);
+                  System.out.println("------------------加载name:："+b);
+
+
+                  //利用spannableString和ImageSpan来替换掉这些图片
+                  int width = ScreenUtils.getScreenWidth(OnlineEditActivity.this);
+                  int height = ScreenUtils.getScreenHeight(OnlineEditActivity.this);
+
+                  try {
+                      BitmapFactory.Options options = new BitmapFactory.Options();
+                      Bitmap bitmap = BitmapFactory.decodeFile(path, options);
+                      bitmap = ImageUtils.zoomImage(bitmap,(width-32)*0.8,bitmap.getHeight()/(bitmap.getWidth()/((width-32)*0.8)));
+                      ImageSpan imageSpan = new ImageSpan(OnlineEditActivity.this, bitmap);
+                      spannable.setSpan(imageSpan, start, end, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                  }catch (Exception e){
+                      e.printStackTrace();
+                  }
+              }
+
+              message.what = 0x25;
+              message.obj=spannable;
+              System.out.println("=================加载中0...........");
+
+              handler.sendMessage(message);
+              //content.append("\n");
+              //Log.d("YYPT_RGX_SUCCESS",content.getText().toString());
+          }
+
+
+      }).start();
       /*    String input =;
         Pattern p = Pattern.compile("\\<img src=\".*?\"\\/>");
         Matcher m = p.matcher(input);

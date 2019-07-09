@@ -10,6 +10,7 @@
         android:layout_height="match_parent"
         android:background="#513F51B5"
         android:orientation="vertical">
+
         <android.support.v7.widget.Toolbar
             android:id="@+id/online_toolbar"
             android:layout_width="match_parent"
@@ -17,6 +18,13 @@
             android:background="@color/toolbar_primary"
             app:popupTheme="@style/ToolbarPopupTheme"
             app:titleTextAppearance="@style/Toolbar.TitleText">
+
+            <com.clannad.menu.weight.CircleImageView
+                android:id="@+id/main_uphoto"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginRight="0dp"
+                android:src="@mipmap/app_icon" />
 
         </android.support.v7.widget.Toolbar>
         <ScrollView
@@ -52,6 +60,7 @@
                 android:hint="请输入内容"
                 android:textColor="#050000"
                 android:textSize="16sp" />
+
         </ScrollView>
 
         <LinearLayout
