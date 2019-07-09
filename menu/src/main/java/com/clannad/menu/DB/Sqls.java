@@ -427,6 +427,29 @@ public class Sqls {
         psmt.close();
     }
 
+    //查询当前房间所有人
+    public ArrayList<user> selAllMember(int rid) throws SQLException {
+        Connection conn = getConn();
+        String sql= "SELECT * from user where uid in(select distinct uid from room_content where rid=? )";
+        PreparedStatement psmt = conn.prepareStatement(sql);
+        psmt.setInt(1, rid);
+        //执行SQL语句
+        ResultSet rs = psmt.executeQuery();
+       ArrayList<user> arrayList=new ArrayList<>();
+       user u=null;
+        while(rs.next()){
+            u=new user();
+            u.setUid(rs.getString("uid"));
+            u.setUname(rs.getString("uname"));
+            u.setUphoto1(rs.getString("uphoto1"));
+            u.setUphoto2(rs.getString("uphoto2"));
+            arrayList.add(u);
+        }
+        rs.close();
+        psmt.close();
+        return arrayList;
+    }
+
 
 
 

@@ -8,16 +8,32 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         android:orientation="horizontal">
 
         <com.clannad.menu.weight.CircleImageView
             android:id="@+id/main_uphoto"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginLeft="50dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginLeft="40dp"
             android:src="@mipmap/app_icon" />
         <TextView
+            android:id="@+id/main_uname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="2"
+            android:ellipsize="end"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:singleLine="true"
+            android:text="root"
+            android:textColor="#111"
+            android:textSize="30dp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/main_uid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -29,7 +45,8 @@
             android:text="root"
             android:textColor="#111"
             android:textSize="50sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="gone"/>
 
 
     </LinearLayout>

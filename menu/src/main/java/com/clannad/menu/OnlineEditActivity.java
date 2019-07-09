@@ -71,6 +71,7 @@ public class OnlineEditActivity extends AppCompatActivity {
     String Master_path;
     int delPosition=-1;            //用来删除的一个变量，因为内部类要用
     ArrayList<RoomContent> roomContents;
+    ArrayList<user> users;
     CircleImageView main_person;
     Toolbar online_toolbar;
     TextView online_textview;
@@ -84,11 +85,13 @@ public class OnlineEditActivity extends AppCompatActivity {
     NavigationView online_right;
     DrawerLayout online_drawerlayout;
     OnlineHistoryAdapter onlineHistoryAdapter;
+    UserAdapter userAdapter;
     Timer timer;
 
     //左菜单
     NavigationView navigationView_left;
     View view_left;
+    ListView listView_left;
     //右菜单
     NavigationView navigationView_right;
     View view_right;
@@ -115,6 +118,13 @@ public class OnlineEditActivity extends AppCompatActivity {
                     //online_textview.setText(neirong);
                     //loadImg(neirong);
                     break;
+                case 0x14:
+                    users=(ArrayList<user>)msg.obj;
+                  userAdapter=new UserAdapter(OnlineEditActivity.this, R.layout.online_left_cell, users);
+                    listView_left.setAdapter(userAdapter);
+                    setListViewHeightBasedOnChildren(listView_left);//显示多行
+                    break;
+
                 case 0x35:
                     String s1 = (String) msg.obj;
                     System.out.println(s1);
@@ -331,6 +341,7 @@ public class OnlineEditActivity extends AppCompatActivity {
         //左
         navigationView_left=findViewById(R.id.online_left);
         view_left=navigationView_left.getHeaderView(0);
+        listView_left=view_left.findViewById(R.id.lv_members);
 
         //右
         navigationView_right=findViewById(R.id.online_right);
@@ -348,6 +359,7 @@ public class OnlineEditActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 online_drawerlayout.openDrawer(GravityCompat.START);
+                loadMembers();
             }
         });
 
@@ -737,6 +749,29 @@ public class OnlineEditActivity extends AppCompatActivity {
 // params.height最后得到整个ListView完整显示需要的高度
         listView.setLayoutParams(params);
     }
+    //房间成员列表加载
+    void loadMembers(){
+        Sqls sqls=new Sqls();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Message message = handler.obtainMessage();
+                try {
+                    ArrayList<user> users=sqls.selAllMember(rid);
+                    message.what =0x14;
+                    message.obj =users ;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    message.what = 0x31;
+                    message.obj ="查询过程出错" ;
+                }
+                handler.sendMessage(message);
+            }
+        }).start();
+
+
+
+    }
 
     //加载列表
     void loadOnlineHistory(){
@@ -761,6 +796,7 @@ public class OnlineEditActivity extends AppCompatActivity {
             }
         }).start();
     }
+
 
     //点击事件
    void lvClick()
