@@ -117,6 +117,13 @@ public class OnlineEditActivity extends AppCompatActivity {
                 case 0x11:
                  //   String neirong=(String) msg.obj;
                     online_textview.setText((CharSequence) msg.obj);
+
+//                    SpannableStringBuilder spannableString = new SpannableStringBuilder();
+//                    spannableString.append("暗影IV");
+//                    spannableString.append("已经开始暴走了");
+//                    ForegroundColorSpan colorSpan = new ForegroundColorSpan(Color.parseColor("#009ad6"));
+//                    spannableString.setSpan(colorSpan, 0, 8, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+                    //((TextView)findViewById(R.id.online_textview)).setText(spannableString);
                     //online_textview.setText(neirong);
                     //loadImg(neirong);
                     break;
@@ -248,7 +255,7 @@ public class OnlineEditActivity extends AppCompatActivity {
                     ArrayList<RoomContent> roomContents = sqls.selAllRoomContent(rid);
                     for (RoomContent rc : roomContents) {
                         neirong += rc.getUid() + ":" + rc.getXcontent() + "      ";
-
+                       // online_textview.setTextColor(Color.parseColor("#DC143C"));
                         content+=rc.getXcontent();
                     }
                     //=========================********************************************************
@@ -270,6 +277,7 @@ public class OnlineEditActivity extends AppCompatActivity {
                             String path = s.replaceAll("\\<img src=\"|\"\\/>","").trim();
                             String b = path.substring(path.lastIndexOf("/") + 1, path.length());
                             //--------------------------------------------------
+                          //  sStr.setSpan(new ForegroundColorSpan(Color.RED), 16, 18, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 
                             File file1=new File(path);
@@ -290,7 +298,7 @@ public class OnlineEditActivity extends AppCompatActivity {
                             System.out.println("------------------加载path："+path);
                             System.out.println("------------------加载name:："+b);
 
-
+                         //   online_textview.setTextColor(Color.parseColor("#DC143C"));
                             //利用spannableString和ImageSpan来替换掉这些图片
                             int width = ScreenUtils.getScreenWidth(OnlineEditActivity.this);
                             int height = ScreenUtils.getScreenHeight(OnlineEditActivity.this);

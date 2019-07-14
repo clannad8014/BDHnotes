@@ -129,10 +129,18 @@ public class AddActivity extends AppCompatActivity {
                     f.deletePhotoWithPath("/storage/emulated/0/BDH.notes/upload");
                     Toast.makeText(AddActivity.this, ss, Toast.LENGTH_LONG).show();
                     break;
+
                 case 0x25:
                     //String con =msg;
                     System.out.println("=================加载中...........");
                     content.setText((CharSequence) msg.obj);
+                    System.out.println("=================加载成功...........");
+                    break;
+
+                case 0x26:
+                    //String con =msg;
+                    System.out.println("=================加载中...........");
+                    content_history.setText((CharSequence) msg.obj);
                     System.out.println("=================加载成功...........");
                     break;
                 case 0x27:case 0x28:case 0x29:case 0x30:case 0x31: case 0x33: case 0x34:
@@ -215,7 +223,7 @@ public class AddActivity extends AppCompatActivity {
 
         //region 初始化内容对象并初始化值
         title.setText(ttt);
-        initContent();
+        initContent(neirong,25);
         //初始化toolBar
         initToolBar();
 
@@ -250,7 +258,8 @@ public class AddActivity extends AppCompatActivity {
                 //刷新图片
                 //callGallery();
                 System.out.println(" 刷新图片");
-                initContent();
+                //content.getText();
+               initContent(content.getText().toString(),25);
 
             }
         });
@@ -353,6 +362,8 @@ public class AddActivity extends AppCompatActivity {
                     {
                         saveNoteContent();
                         beforeneirong=content.getText().toString();
+                        initContent(beforeneirong,25
+                        );
                         System.out.println("保存完内容");
                     }
                     else {
@@ -372,7 +383,7 @@ public class AddActivity extends AppCompatActivity {
                 {
 
                     Sqls sqls=new Sqls();
-                    new Thread(new Runnable() {
+                    new Thread(new Runnable() {]
                         @Override
                         public void run() {
                             Message message = handler.obtainMessage();
@@ -683,7 +694,7 @@ public class AddActivity extends AppCompatActivity {
     //  http://blog.sina.com.cn/s/blog_766aa3810100u8tx.html#cmt_523FF91E-7F000001-B8CB053C-7FA-8A0
     //  https://segmentfault.com/q/1010000004268968
     //  http://www.jb51.net/article/102683.htm
-    private void initContent(){
+     void initContent(String input,int a){
 
         // LoadingDialog.getInstance(AddActivity.this).show();
         System.out.println("222=======");
@@ -692,7 +703,7 @@ public class AddActivity extends AppCompatActivity {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    String input =neirong;
+                  //  String input =neirong;
                     Pattern p = Pattern.compile("\\<img src=\".*?\"\\/>");
                     Matcher m = p.matcher(input);
                     SpannableString spannable = new SpannableString(input);
@@ -724,12 +735,9 @@ public class AddActivity extends AppCompatActivity {
                         }
 
                     }
-                  //  handler.sendMessage(message);
   //--------------------------------------------------
 
-                        System.out.println("------------------加载path："+path);
-                        System.out.println("------------------加载name:："+b);
-                        //Log.d("YYPT_AFTER", path);
+
 
                         //利用spannableString和ImageSpan来替换掉这些图片
                         int width = ScreenUtils.getScreenWidth(AddActivity.this);
@@ -746,9 +754,15 @@ public class AddActivity extends AppCompatActivity {
                         }
                     }
                     //content.setText(spannable);
+                    if(a==25){
+                        message.what = 0x25;
+                        message.obj=spannable;
 
-                    message.what = 0x25;
-                    message.obj=spannable;
+                    }else if(a==26){
+                        message.what = 0x26;
+                        message.obj=spannable;
+                      }
+
                     System.out.println("=================加载中0...........");
 
                     handler.sendMessage(message);
@@ -925,6 +939,7 @@ public class AddActivity extends AppCompatActivity {
                 note_content nc=note_contents.get(position);
                 awindow.setVisibility(View.VISIBLE);
                 content_history.setText(nc.getXcontent());
+                initContent(nc.getXcontent(),26);
                 Toast.makeText(AddActivity.this, "已加载", Toast.LENGTH_SHORT).show();
             }
         });
